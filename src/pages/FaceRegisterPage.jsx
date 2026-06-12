@@ -34,9 +34,6 @@ const FaceRegisterPage = () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480, facingMode: 'user' },
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
       streamRef.current = stream;
       setIsCameraActive(true);
     } catch (err) {
@@ -45,6 +42,13 @@ const FaceRegisterPage = () => {
       setRegisterStatus('error');
     }
   };
+
+  // Bind video stream once the video element has mounted in the DOM
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isCameraActive]);
 
   // Stop Camera
   const stopCamera = () => {
