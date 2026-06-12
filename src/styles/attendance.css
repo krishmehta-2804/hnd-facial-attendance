@@ -1,0 +1,427 @@
+/* ===== Attendance Page Styles ===== */
+
+.attendance-page {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Face Capture */
+.face-capture {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.face-capture-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--primary);
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.face-capture-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.face-capture-container canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+}
+
+.face-capture-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+.face-capture-overlay.hidden {
+  display: none;
+}
+
+.face-capture-guide {
+  width: 200px;
+  height: 250px;
+  border: 3px dashed var(--accent-light);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  opacity: 0.5;
+  animation: glow-pulse 2s infinite;
+}
+
+.face-capture-status {
+  position: absolute;
+  bottom: var(--space-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  backdrop-filter: blur(12px);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.face-capture-status.detecting {
+  background: rgba(59, 130, 246, 0.8);
+  color: white;
+}
+
+.face-capture-status.recognized {
+  background: rgba(16, 185, 129, 0.8);
+  color: white;
+  animation: scaleIn 0.3s ease-out;
+}
+
+.face-capture-status.unknown {
+  background: rgba(239, 68, 68, 0.8);
+  color: white;
+}
+
+.face-capture-status.error {
+  background: rgba(239, 68, 68, 0.8);
+  color: white;
+}
+
+.face-capture-controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+/* Recognition Results */
+.recognition-result {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  z-index: 3;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.recognition-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  min-width: 200px;
+}
+
+.recognition-card.matched {
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: var(--shadow-glow-success);
+}
+
+.recognition-card .student-name {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.recognition-card .student-class {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.recognition-card .confidence {
+  font-size: var(--font-size-xs);
+  color: var(--success);
+  margin-top: var(--space-sm);
+}
+
+/* Attendance Feed */
+.attendance-feed {
+  margin-top: var(--space-xl);
+}
+
+.attendance-feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.attendance-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.attendance-feed-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.attendance-feed-item .student-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--accent) 0%, #8B5CF6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.attendance-feed-item .feed-info {
+  flex: 1;
+}
+
+.attendance-feed-item .feed-name {
+  font-weight: 600;
+  font-size: var(--font-size-base);
+}
+
+.attendance-feed-item .feed-meta {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.attendance-feed-item .feed-status {
+  flex-shrink: 0;
+}
+
+/* Manual Attendance */
+.manual-attendance {
+  margin-top: var(--space-xl);
+}
+
+.manual-attendance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+.student-attendance-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.student-attendance-card:hover {
+  border-color: var(--border-focus);
+  background: var(--bg-card-hover);
+}
+
+.student-attendance-card.present {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.student-attendance-card.absent {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.student-attendance-card.late {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.attendance-toggle {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.attendance-toggle button {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.attendance-toggle button.active-present {
+  background: var(--success);
+  color: white;
+  border-color: var(--success);
+}
+
+.attendance-toggle button.active-absent {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+.attendance-toggle button.active-late {
+  background: var(--warning);
+  color: white;
+  border-color: var(--warning);
+}
+
+/* Class Selector */
+.class-selector {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+
+.class-chip {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.class-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.class-chip.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Attendance Mode Tabs */
+.attendance-mode-tabs {
+  display: flex;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 4px;
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-xl);
+  width: fit-content;
+}
+
+.attendance-mode-tab {
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.attendance-mode-tab.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+/* Student Registration */
+.registration-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  max-width: 900px;
+}
+
+.registration-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.registration-form .form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.photo-capture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.photo-capture-slot {
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  border: 2px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-capture-slot:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.photo-capture-slot.captured {
+  border-style: solid;
+  border-color: var(--success);
+}
+
+.photo-capture-slot img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .registration-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .face-capture-container {
+    aspect-ratio: 3/4;
+  }
+}
