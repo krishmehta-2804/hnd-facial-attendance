@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAttendance } from '../contexts/AttendanceContext';
 import { Camera, RefreshCw, CheckCircle, AlertCircle, Scan, User, Play, Square, Award } from 'lucide-react';
-import { loadModels, detectFace } from '../services/faceRecognition';
+import { loadModels, detectFace, areModelsLoaded } from '../services/faceRecognition';
 import offlineDB from '../services/offlineDB';
 import '../styles/attendance.css';
 
@@ -29,13 +29,10 @@ const FaceRegisterPage = () => {
   useEffect(() => {
     const initModels = async () => {
       try {
-        const success = await loadModels();
-        if (!success) {
-          setErrorMessage('Failed to load facial recognition models. Please check if model files exist.');
-        }
+        await loadModels();
       } catch (err) {
         console.error('Error loading models:', err);
-        setErrorMessage('Failed to load models.');
+        setErrorMessage('Failed to load facial recognition models: ' + (err.message || err.toString()));
       } finally {
         setModelsLoading(false);
       }
@@ -48,6 +45,11 @@ const FaceRegisterPage = () => {
 
   // Start Camera
   const startCamera = async () => {
+    if (!areModelsLoaded()) {
+      setErrorMessage('Facial recognition models are not loaded. Cannot start camera. Check your internet connection or reload the page.');
+      setRegisterStatus('error');
+      return;
+    }
     setRegisterStatus('idle');
     setCapturedImages([]);
     setCaptureProgress(0);

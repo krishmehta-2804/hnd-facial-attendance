@@ -19,8 +19,8 @@ export const loadModels = async (modelPath = '/models') => {
     console.log('face-api.js models loaded successfully.');
     return true;
   } catch (err) {
-    console.warn('Could not load face-api.js models (may not be in public/models/ yet).', err);
-    return false;
+    console.error('Failed to load face-api.js models:', err);
+    throw err;
   }
 };
 

@@ -5,7 +5,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAttendance } from '../contexts/AttendanceContext';
 import { ATTENDANCE_STATUS } from '../utils/constants';
 import { formatTime } from '../utils/dateUtils';
-import { loadModels, detectFace, createMatcher, matchFace } from '../services/faceRecognition';
+import { loadModels, detectFace, createMatcher, matchFace, areModelsLoaded } from '../services/faceRecognition';
 import offlineDB from '../services/offlineDB';
 import {
   Camera, UserCheck, List, Search, CheckCircle2, XCircle, Clock,
@@ -103,6 +103,10 @@ const AttendancePage = () => {
 
   // Start Camera
   const startCamera = async () => {
+    if (!areModelsLoaded()) {
+      alert('Facial recognition models are not loaded yet. Please wait for initialization or check your network and refresh the page.');
+      return;
+    }
     setScanStatus('idle');
     setRecognizedStudent(null);
     try {
