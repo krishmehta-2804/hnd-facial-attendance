@@ -154,6 +154,10 @@ const FaceRegisterPage = () => {
         }
       } catch (err) {
         console.error('Error during live scan:', err);
+        setErrorMessage(`Scan Error: ${err.message || err.toString()}`);
+        setRegisterStatus('error');
+        stopCamera();
+        return;
       }
 
       // Continue loop if not finished
