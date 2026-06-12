@@ -25,6 +25,7 @@ const AttendancePage = () => {
   const [scanStatus, setScanStatus] = useState('idle'); // idle, scanning, recognized
   const [recognizedStudent, setRecognizedStudent] = useState(null);
   const [modelsLoading, setModelsLoading] = useState(true);
+  const [isDemoScanner, setIsDemoScanner] = useState(false);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -33,6 +34,28 @@ const AttendancePage = () => {
 
   const classStudents = getClassStudents(selectedClass);
   const classStats = getClassTodayStats(selectedClass);
+
+  // Refs to avoid React hook state closures in requestAnimationFrame loop
+  const classStudentsRef = useRef(classStudents);
+  const todayRecordsRef = useRef(todayRecords);
+  const scanStatusRef = useRef(scanStatus);
+  const isCameraActiveRef = useRef(isCameraActive);
+
+  useEffect(() => {
+    classStudentsRef.current = classStudents;
+  }, [classStudents]);
+
+  useEffect(() => {
+    todayRecordsRef.current = todayRecords;
+  }, [todayRecords]);
+
+  useEffect(() => {
+    scanStatusRef.current = scanStatus;
+  }, [scanStatus]);
+
+  useEffect(() => {
+    isCameraActiveRef.current = isCameraActive;
+  }, [isCameraActive]);
 
   const filteredStudents = classStudents.filter((s) =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -55,6 +78,11 @@ const AttendancePage = () => {
 
   const getStudentStatus = (studentId) => {
     const record = todayRecords.find((r) => r.studentId === studentId);
+    return record?.status || null;
+  };
+
+  const getStudentStatusFromRef = (studentId) => {
+    const record = todayRecordsRef.current.find((r) => r.studentId === studentId);
     return record?.status || null;
   };
 
@@ -87,8 +115,12 @@ const AttendancePage = () => {
 
       // Fetch stored face descriptors from IndexedDB
       const storedDescriptors = await offlineDB.faceDescriptors.toArray();
-      if (storedDescriptors.length > 0) {
-        const formatted = storedDescriptors.map(d => ({
+      const currentClassStudentIds = new Set(classStudents.map(s => s.id));
+      const classDescriptors = storedDescriptors.filter(d => currentClassStudentIds.has(d.studentId));
+
+      if (classDescriptors.length > 0) {
+        setIsDemoScanner(false);
+        const formatted = classDescriptors.map(d => ({
           label: d.studentId,
           descriptors: [new Float32Array(d.descriptor)]
         }));
@@ -96,6 +128,7 @@ const AttendancePage = () => {
         startScanningSimulation(matcher);
       } else {
         // Fallback to simulation mode if no faces registered yet
+        setIsDemoScanner(true);
         startScanningSimulation(null);
       }
     } catch (err) {
@@ -134,7 +167,17 @@ const AttendancePage = () => {
   const startScanningSimulation = (matcher = null) => {
     if (matcher) {
       const scanLoop = async () => {
-        if (!videoRef.current || !isCameraActive) return;
+        if (!videoRef.current || !isCameraActiveRef.current) return;
+
+        // Skip detection if we are currently displaying a recognized student
+        if (scanStatusRef.current === 'recognized') {
+          if (isCameraActiveRef.current) {
+            setTimeout(() => {
+              animationFrameRef.current = requestAnimationFrame(scanLoop);
+            }, 500);
+          }
+          return;
+        }
 
         try {
           const detection = await detectFace(videoRef.current);
@@ -142,9 +185,9 @@ const AttendancePage = () => {
             const match = matchFace(detection.descriptor, matcher);
             if (match && match.label !== 'unknown') {
               const studentId = match.label;
-              const student = classStudents.find(s => s.id === studentId);
+              const student = classStudentsRef.current.find(s => s.id === studentId);
               
-              if (student && !getStudentStatus(studentId)) {
+              if (student && !getStudentStatusFromRef(studentId)) {
                 const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', match.confidence);
                 if (record) {
                   setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
@@ -163,7 +206,7 @@ const AttendancePage = () => {
           console.error('Real-time face recognition match error:', err);
         }
 
-        if (isCameraActive) {
+        if (isCameraActiveRef.current) {
           setTimeout(() => {
             animationFrameRef.current = requestAnimationFrame(scanLoop);
           }, 500); // Check frame every 500ms
@@ -181,7 +224,7 @@ const AttendancePage = () => {
       setRecognizedStudent(null);
 
       setTimeout(() => {
-        const unmarked = classStudents.filter((s) => !getStudentStatus(s.id));
+        const unmarked = classStudentsRef.current.filter((s) => !getStudentStatusFromRef(s.id));
         
         if (unmarked.length === 0) {
           stopCamera();
@@ -287,6 +330,49 @@ const AttendancePage = () => {
       {mode === 'facial' ? (
         /* Facial Recognition Mode */
         <div className="card" style={{ padding: 'var(--space-lg)', position: 'relative' }}>
+          {/* Simulation vs Live Mode Indicator Banner */}
+          {isCameraActive && (
+            isDemoScanner ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px var(--space-md)',
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.2)',
+                borderRadius: 'var(--radius-md)',
+                color: '#F59E0B',
+                marginBottom: 'var(--space-md)',
+                fontSize: 'var(--font-size-sm)',
+                lineHeight: '1.4'
+              }}>
+                <AlertCircle size={18} style={{ flexShrink: 0, color: '#F59E0B' }} />
+                <div>
+                  <strong>Demo Simulation Mode Active:</strong> No face profiles are registered for Class {classes.find(c => c.id === selectedClass)?.name}-{classes.find(c => c.id === selectedClass)?.section}. The camera is running in simulation mode. Enrolling a student's face in the <strong>Face Register</strong> tab will activate real-time face matching.
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px var(--space-md)',
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: 'var(--radius-md)',
+                color: '#10B981',
+                marginBottom: 'var(--space-md)',
+                fontSize: 'var(--font-size-sm)',
+                lineHeight: '1.4'
+              }}>
+                <CheckCircle2 size={18} style={{ flexShrink: 0, color: '#10B981' }} />
+                <div>
+                  <strong>Live Webcam Matching Active:</strong> The scanner is comparing face features against registered descriptors for Class {classes.find(c => c.id === selectedClass)?.name}-{classes.find(c => c.id === selectedClass)?.section}.
+                </div>
+              </div>
+            )
+          )}
+
           <div className="face-capture-container" style={{ background: '#111827', position: 'relative', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
             {modelsLoading ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--accent)', padding: 'var(--space-2xl)' }}>
@@ -302,7 +388,7 @@ const AttendancePage = () => {
                     <div className="face-capture-guide animate-pulse" />
                     <div className="face-capture-status detecting">
                       <Scan className="animate-spin" size={16} />
-                      Scanning Classroom...
+                      {isDemoScanner ? 'Simulating Classroom Scanner...' : 'Scanning Classroom (Live)...'}
                     </div>
                   </>
                 )}
@@ -323,6 +409,15 @@ const AttendancePage = () => {
                 <p style={{ fontSize: 'var(--font-size-sm)', marginTop: '4px', maxWidth: '400px', textAlign: 'center' }}>
                   Position the tablet facing the class. Students will be scanned and checked in automatically.
                 </p>
+                {classStudents.filter(s => s.faceRegistered).length === 0 ? (
+                  <p style={{ fontSize: 'var(--font-size-xs)', marginTop: '8px', color: 'var(--warning)', maxWidth: '360px', textAlign: 'center' }}>
+                    Note: No student face profiles are registered for this class. It will run in Demo Mode.
+                  </p>
+                ) : (
+                  <p style={{ fontSize: 'var(--font-size-xs)', marginTop: '8px', color: 'var(--success)', maxWidth: '360px', textAlign: 'center' }}>
+                    ✓ {classStudents.filter(s => s.faceRegistered).length} students have registered face profiles in this class. Live recognition is available!
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -372,8 +467,24 @@ const AttendancePage = () => {
                     {student.avatar}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 'var(--font-size-base)', color: 'var(--text)' }}>
+                    <div style={{ fontWeight: 600, fontSize: 'var(--font-size-base)', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {student.name}
+                      {student.faceRegistered && (
+                        <span style={{
+                          fontSize: '10px',
+                          padding: '1px 6px',
+                          background: 'rgba(16, 185, 129, 0.15)',
+                          color: '#10B981',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          borderRadius: '10px',
+                          fontWeight: 'bold',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px'
+                        }}>
+                          <Scan size={10} /> Live Face
+                        </span>
+                      )}
                     </div>
                     <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>
                       Roll #{student.rollNo}

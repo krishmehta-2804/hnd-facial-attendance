@@ -9,7 +9,7 @@ import offlineDB from '../services/offlineDB';
 import '../styles/attendance.css';
 
 const FaceRegisterPage = () => {
-  const { students, classes } = useAttendance();
+  const { students, classes, refreshFaceRegistrations } = useAttendance();
   const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
   const [selectedStudent, setSelectedStudent] = useState('');
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -142,10 +142,9 @@ const FaceRegisterPage = () => {
               descriptor: Array.from(average) // serialize to standard array
             });
 
-            // Mark student as registered in local state
-            const student = students.find((s) => s.id === selectedStudent);
-            if (student) {
-              student.faceRegistered = true;
+            // Refresh global attendance context state
+            if (refreshFaceRegistrations) {
+              await refreshFaceRegistrations();
             }
 
             setRegisterStatus('success');

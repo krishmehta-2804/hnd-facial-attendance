@@ -40,7 +40,10 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+        globPatterns: [
+          '**/*.{js,css,html,ico,png,svg,json}',
+          'models/**/*'
+        ],
         // Set maximum cache size limit to 6MB to comfortably cache face-api model shards
         maximumFileSizeToCacheInBytes: 6000000,
       }

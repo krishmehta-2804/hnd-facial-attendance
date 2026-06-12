@@ -1,10 +1,11 @@
 /**
  * HND Facial Attendance System - Attendance Context
  */
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { demoAttendanceRecords, demoStudents, demoClasses, demoStats } from '../services/demoData';
 import { ATTENDANCE_STATUS } from '../utils/constants';
+import db from '../services/offlineDB';
 
 const AttendanceContext = createContext(null);
 
@@ -16,10 +17,31 @@ export const useAttendance = () => {
 
 export const AttendanceProvider = ({ children }) => {
   const [records, setRecords] = useState(demoAttendanceRecords);
-  const [students] = useState(demoStudents);
+  const [students, setStudents] = useState(demoStudents);
   const [classes] = useState(demoClasses);
 
   const today = format(new Date(), 'yyyy-MM-dd');
+
+  // Load and refresh student face-registration status from IndexedDB
+  const refreshFaceRegistrations = useCallback(async () => {
+    try {
+      const stored = await db.faceDescriptors.toArray();
+      const registeredIds = new Set(stored.map((d) => d.studentId));
+      setStudents((prev) =>
+        prev.map((s) => ({
+          ...s,
+          faceRegistered: registeredIds.has(s.id),
+        }))
+      );
+    } catch (err) {
+      console.error('Failed to load face registrations from IndexedDB:', err);
+    }
+  }, []);
+
+  // Check face registrations on mount
+  useEffect(() => {
+    refreshFaceRegistrations();
+  }, [refreshFaceRegistrations]);
 
   const todayRecords = useMemo(
     () => records.filter((r) => r.date === today),
@@ -27,7 +49,7 @@ export const AttendanceProvider = ({ children }) => {
   );
 
   const markAttendance = useCallback((studentId, status, method = 'manual', confidence = null) => {
-    const student = demoStudents.find((s) => s.id === studentId);
+    const student = students.find((s) => s.id === studentId);
     if (!student) return;
 
     const record = {
@@ -58,7 +80,7 @@ export const AttendanceProvider = ({ children }) => {
     });
 
     return record;
-  }, [today]);
+  }, [today, students]);
 
   const getStudentTodayStatus = useCallback(
     (studentId) => {
@@ -97,6 +119,7 @@ export const AttendanceProvider = ({ children }) => {
     getStudentTodayStatus,
     getClassStudents,
     getClassTodayStats,
+    refreshFaceRegistrations,
   };
 
   return (
