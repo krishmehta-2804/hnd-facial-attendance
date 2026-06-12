@@ -25,3 +25,7 @@ dist-ssr
 
 # Reference repository
 Attendance-Management-system-using-face-recognition
+
+.npm-cache
+.venv
+

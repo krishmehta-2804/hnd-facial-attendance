@@ -43,13 +43,8 @@ const FaceRegisterPage = () => {
   // Filter students by selected class
   const classStudents = students.filter((s) => s.classId === selectedClass);
 
-  // Start Camera
+  // Start Camera — camera launches immediately; models are awaited in the background
   const startCamera = async () => {
-    if (!areModelsLoaded()) {
-      setErrorMessage('Facial recognition models are not loaded. Cannot start camera. Check your internet connection or reload the page.');
-      setRegisterStatus('error');
-      return;
-    }
     setRegisterStatus('idle');
     setCapturedImages([]);
     setCaptureProgress(0);
@@ -61,6 +56,19 @@ const FaceRegisterPage = () => {
       });
       streamRef.current = stream;
       setIsCameraActive(true);
+
+      // If models haven't loaded yet, wait for them now (max 15s)
+      if (!areModelsLoaded()) {
+        try {
+          await Promise.race([
+            loadModels(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+          ]);
+        } catch (e) {
+          setErrorMessage('Could not load face AI models: ' + e.message + '. Check your internet connection and refresh.');
+          setRegisterStatus('error');
+        }
+      }
     } catch (err) {
       console.error('Error starting camera:', err);
       setErrorMessage('Could not access camera. Please check camera permissions.');
@@ -229,9 +237,9 @@ const FaceRegisterPage = () => {
             {/* Camera Controls */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
               {!isCameraActive ? (
-                <button className="btn btn-primary" onClick={startCamera} disabled={registerStatus === 'capturing' || modelsLoading}>
-                  <Play size={16} /> Start Camera
-                </button>
+                <button className="btn btn-primary" onClick={startCamera} disabled={registerStatus === 'capturing'}>
+                <Play size={16} /> {modelsLoading ? 'Start Camera (Loading AI...)' : 'Start Camera'}
+              </button>
               ) : (
                 <>
                   <button className="btn btn-ghost" onClick={stopCamera}>

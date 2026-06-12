@@ -12,6 +12,8 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Load face-api.js from CDN BEFORE React bundle — avoids Vite/TF bundling issues -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

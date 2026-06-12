@@ -6,6 +6,7 @@ import { useAttendance } from '../contexts/AttendanceContext';
 import { ATTENDANCE_STATUS } from '../utils/constants';
 import { formatTime } from '../utils/dateUtils';
 import { loadModels, detectFace, createMatcher, matchFace, areModelsLoaded } from '../services/faceRecognition';
+// areModelsLoaded is imported but we allow camera even while loading
 import offlineDB from '../services/offlineDB';
 import {
   Camera, UserCheck, List, Search, CheckCircle2, XCircle, Clock,
@@ -101,12 +102,8 @@ const AttendancePage = () => {
     });
   };
 
-  // Start Camera
+  // Start Camera — always starts immediately; models may still be loading in background
   const startCamera = async () => {
-    if (!areModelsLoaded()) {
-      alert('Facial recognition models are not loaded yet. Please wait for initialization or check your network and refresh the page.');
-      return;
-    }
     setScanStatus('idle');
     setRecognizedStudent(null);
     try {
@@ -117,21 +114,33 @@ const AttendancePage = () => {
       setIsCameraActive(true);
       setScanStatus('scanning');
 
+      // Wait for models if they are still loading (max 10s)
+      if (!areModelsLoaded()) {
+        try {
+          await Promise.race([
+            loadModels(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+          ]);
+        } catch (e) {
+          console.warn('[AttendancePage] Models could not load — falling back to demo mode:', e.message);
+        }
+      }
+
       // Fetch stored face descriptors from IndexedDB
       const storedDescriptors = await offlineDB.faceDescriptors.toArray();
       const currentClassStudentIds = new Set(classStudents.map(s => s.id));
       const classDescriptors = storedDescriptors.filter(d => currentClassStudentIds.has(d.studentId));
 
-      if (classDescriptors.length > 0) {
+      if (areModelsLoaded() && classDescriptors.length > 0) {
         setIsDemoScanner(false);
         const formatted = classDescriptors.map(d => ({
           label: d.studentId,
           descriptors: [new Float32Array(d.descriptor)]
         }));
-        const matcher = createMatcher(formatted, 0.55); // 0.55 distance threshold
+        const matcher = createMatcher(formatted, 0.55);
         startScanningSimulation(matcher);
       } else {
-        // Fallback to simulation mode if no faces registered yet
+        // Fallback to simulation mode if no faces registered OR models failed
         setIsDemoScanner(true);
         startScanningSimulation(null);
       }
@@ -428,8 +437,8 @@ const AttendancePage = () => {
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
             {!isCameraActive ? (
-              <button className="btn btn-primary btn-lg" onClick={startCamera} disabled={modelsLoading}>
-                <Play size={18} /> Start Scanner Camera
+              <button className="btn btn-primary btn-lg" onClick={startCamera}>
+                <Play size={18} /> {modelsLoading ? 'Start Scanner (Loading AI...)' : 'Start Scanner Camera'}
               </button>
             ) : (
               <button className="btn btn-ghost" onClick={stopCamera}>

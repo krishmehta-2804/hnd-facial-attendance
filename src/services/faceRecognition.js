@@ -1,66 +1,95 @@
 /**
- * Facial Recognition Service - Integration with face-api.js
+ * Facial Recognition Service
+ * Uses the face-api.js CDN global (window.faceapi) loaded in index.html.
+ * This avoids ALL Vite/TensorFlow bundling conflicts.
  */
-import * as faceapi from '@vladmandic/face-api';
 
 let modelsLoaded = false;
+let modelLoadPromise = null;
+
+// ─── Wait for faceapi global to be available ─────────────────
+const getFaceApi = () => {
+  if (typeof window !== 'undefined' && window.faceapi) return window.faceapi;
+  return null;
+};
 
 // ─── Model Loaders ──────────────────────────────────────────
 export const loadModels = async (modelPath = '/models') => {
   if (modelsLoaded) return true;
-  try {
-    console.log('Ensuring TensorFlow.js engine is ready...');
-    await faceapi.tf.ready();
-    console.log('Loading face-api.js models from:', modelPath);
+
+  // If already loading, return the same promise (don't double-load)
+  if (modelLoadPromise) return modelLoadPromise;
+
+  modelLoadPromise = (async () => {
+    const faceapi = getFaceApi();
+    if (!faceapi) {
+      throw new Error('face-api.js CDN script has not loaded yet. Please refresh the page.');
+    }
+
+    console.log('[FaceRecognition] Loading models from:', modelPath);
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(modelPath),
       faceapi.nets.faceLandmark68Net.loadFromUri(modelPath),
       faceapi.nets.faceRecognitionNet.loadFromUri(modelPath),
     ]);
+
     modelsLoaded = true;
-    console.log('face-api.js models loaded successfully.');
+    console.log('[FaceRecognition] All models loaded successfully.');
     return true;
-  } catch (err) {
-    console.error('Failed to load face-api.js models:', err);
-    throw err;
-  }
+  })();
+
+  return modelLoadPromise;
 };
 
-// Check if models are loaded
+// ─── Status Check ────────────────────────────────────────────
 export const areModelsLoaded = () => modelsLoaded;
 
-// ─── Detection & Descriptor Extraction ──────────────────────
+// ─── Face Detection ──────────────────────────────────────────
 export const detectFace = async (videoElement) => {
   if (!modelsLoaded) return null;
+  const faceapi = getFaceApi();
+  if (!faceapi) return null;
+
   try {
-    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 });
+    const options = new faceapi.TinyFaceDetectorOptions({
+      inputSize: 320,
+      scoreThreshold: 0.3,
+    });
     return await faceapi
       .detectSingleFace(videoElement, options)
       .withFaceLandmarks()
       .withFaceDescriptor();
   } catch (err) {
-    console.error('Error detecting single face:', err);
+    console.error('[FaceRecognition] detectFace error:', err);
     return null;
   }
 };
 
 export const detectAllFaces = async (videoElement) => {
   if (!modelsLoaded) return [];
+  const faceapi = getFaceApi();
+  if (!faceapi) return [];
+
   try {
-    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 });
+    const options = new faceapi.TinyFaceDetectorOptions({
+      inputSize: 320,
+      scoreThreshold: 0.3,
+    });
     return await faceapi
       .detectAllFaces(videoElement, options)
       .withFaceLandmarks()
       .withFaceDescriptors();
   } catch (err) {
-    console.error('Error detecting multiple faces:', err);
+    console.error('[FaceRecognition] detectAllFaces error:', err);
     return [];
   }
 };
 
-// Create Face Matcher for comparison matching
-export const createMatcher = (labeledDescriptors, threshold = 0.6) => {
-  // labeledDescriptors: Array of { label: string, descriptors: Float32Array[] }
+// ─── Face Matcher ────────────────────────────────────────────
+export const createMatcher = (labeledDescriptors, threshold = 0.55) => {
+  const faceapi = getFaceApi();
+  if (!faceapi) return null;
+
   const matchers = labeledDescriptors.map(
     (item) =>
       new faceapi.LabeledFaceDescriptors(
@@ -71,7 +100,6 @@ export const createMatcher = (labeledDescriptors, threshold = 0.6) => {
   return new faceapi.FaceMatcher(matchers, threshold);
 };
 
-// Match Face Descriptor against matcher
 export const matchFace = (descriptor, matcher) => {
   if (!matcher) return null;
   try {
@@ -79,35 +107,12 @@ export const matchFace = (descriptor, matcher) => {
     return {
       label: match.label,
       distance: match.distance,
-      confidence: (1 - match.distance).toFixed(2),
+      confidence: parseFloat((1 - match.distance).toFixed(2)),
     };
   } catch (err) {
-    console.error('Error matching face descriptor:', err);
+    console.error('[FaceRecognition] matchFace error:', err);
     return null;
   }
-};
-
-// ─── Simulation Mode Fallbacks ──────────────────────────────
-export const simulateDetection = (studentList, callback) => {
-  // Simulates scanning and identifying a random student for demo purposes
-  let count = 0;
-  const interval = setInterval(() => {
-    count++;
-    if (count > 3) {
-      clearInterval(interval);
-      // Pick a random unregistered or registered student
-      const randomStudent = studentList[Math.floor(Math.random() * studentList.length)];
-      callback({
-        status: 'matched',
-        student: randomStudent,
-        confidence: (0.85 + Math.random() * 0.14).toFixed(2),
-      });
-    } else {
-      callback({ status: 'scanning', progress: count * 33 });
-    }
-  }, 1000);
-
-  return () => clearInterval(interval);
 };
 
 export default {
@@ -117,5 +122,4 @@ export default {
   detectAllFaces,
   createMatcher,
   matchFace,
-  simulateDetection,
 };
