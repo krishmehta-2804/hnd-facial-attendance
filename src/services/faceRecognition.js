@@ -31,7 +31,7 @@ export const areModelsLoaded = () => modelsLoaded;
 export const detectFace = async (videoElement) => {
   if (!modelsLoaded) return null;
   try {
-    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 });
     return await faceapi
       .detectSingleFace(videoElement, options)
       .withFaceLandmarks()
@@ -45,7 +45,7 @@ export const detectFace = async (videoElement) => {
 export const detectAllFaces = async (videoElement) => {
   if (!modelsLoaded) return [];
   try {
-    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 });
     return await faceapi
       .detectAllFaces(videoElement, options)
       .withFaceLandmarks()

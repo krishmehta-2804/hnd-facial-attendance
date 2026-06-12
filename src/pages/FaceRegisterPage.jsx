@@ -190,7 +190,7 @@ const FaceRegisterPage = () => {
                 </div>
               ) : isCameraActive ? (
                 <>
-                  <video ref={videoRef} autoPlay playsInline muted />
+                  <video ref={videoRef} autoPlay playsInline muted width="640" height="480" />
                   {isCapturing && (
                     <div className="face-capture-guide animate-pulse" />
                   )}
