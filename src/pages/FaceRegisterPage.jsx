@@ -4,6 +4,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAttendance } from '../contexts/AttendanceContext';
 import { Camera, RefreshCw, CheckCircle, AlertCircle, Scan, User, Play, Square, Award } from 'lucide-react';
+import { loadModels, detectFace } from '../services/faceRecognition';
+import offlineDB from '../services/offlineDB';
 import '../styles/attendance.css';
 
 const FaceRegisterPage = () => {
@@ -16,10 +18,30 @@ const FaceRegisterPage = () => {
   const [capturedImages, setCapturedImages] = useState([]);
   const [registerStatus, setRegisterStatus] = useState('idle'); // idle, capturing, success, error
   const [errorMessage, setErrorMessage] = useState('');
+  const [modelsLoading, setModelsLoading] = useState(true);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const captureIntervalRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const descriptorsRef = useRef([]);
+
+  // Load models on page mount
+  useEffect(() => {
+    const initModels = async () => {
+      try {
+        const success = await loadModels();
+        if (!success) {
+          setErrorMessage('Failed to load facial recognition models. Please check if model files exist.');
+        }
+      } catch (err) {
+        console.error('Error loading models:', err);
+        setErrorMessage('Failed to load models.');
+      } finally {
+        setModelsLoading(false);
+      }
+    };
+    initModels();
+  }, []);
 
   // Filter students by selected class
   const classStudents = students.filter((s) => s.classId === selectedClass);
@@ -30,6 +52,7 @@ const FaceRegisterPage = () => {
     setCapturedImages([]);
     setCaptureProgress(0);
     setErrorMessage('');
+    descriptorsRef.current = [];
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480, facingMode: 'user' },
@@ -52,6 +75,9 @@ const FaceRegisterPage = () => {
 
   // Stop Camera
   const stopCamera = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
     }
@@ -60,9 +86,6 @@ const FaceRegisterPage = () => {
     }
     setIsCameraActive(false);
     setIsCapturing(false);
-    if (captureIntervalRef.current) {
-      clearInterval(captureIntervalRef.current);
-    }
   };
 
   // Cleanup on unmount
@@ -72,7 +95,7 @@ const FaceRegisterPage = () => {
     };
   }, []);
 
-  // Simulate or capture face descriptors
+  // Real face scanning and descriptor extraction loop
   const startFaceScan = () => {
     if (!selectedStudent) {
       setErrorMessage('Please select a student first.');
@@ -82,31 +105,68 @@ const FaceRegisterPage = () => {
     setRegisterStatus('capturing');
     setCaptureProgress(0);
     setCapturedImages([]);
+    descriptorsRef.current = [];
 
-    let progress = 0;
-    captureIntervalRef.current = setInterval(() => {
-      progress += 1;
-      setCaptureProgress(progress);
-      
-      // Add a placeholder/mock image representation or a simple Canvas screenshot
-      setCapturedImages((prev) => [
-        ...prev,
-        { id: progress, url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%232563EB" opacity="0.3"/><circle cx="50" cy="50" r="30" stroke="%233B82F6" stroke-width="3" fill="none"/></svg>' }
-      ]);
+    const scanLoop = async () => {
+      if (!videoRef.current || !isCameraActive) return;
 
-      if (progress >= 5) {
-        clearInterval(captureIntervalRef.current);
-        setIsCapturing(false);
-        setRegisterStatus('success');
+      try {
+        const detection = await detectFace(videoRef.current);
         
-        // Mark student as registered in memory
-        const student = students.find((s) => s.id === selectedStudent);
-        if (student) {
-          student.faceRegistered = true;
+        if (detection && detection.descriptor) {
+          descriptorsRef.current.push(detection.descriptor);
+          const currentCount = descriptorsRef.current.length;
+          
+          setCaptureProgress(currentCount);
+          setCapturedImages((prev) => [
+            ...prev,
+            { id: currentCount, url: 'captured' }
+          ]);
+
+          // Stop if we have captured 5 descriptors
+          if (currentCount >= 5) {
+            // Calculate Average Descriptor
+            const average = new Float32Array(128);
+            for (let i = 0; i < 128; i++) {
+              let sum = 0;
+              for (let j = 0; j < 5; j++) {
+                sum += descriptorsRef.current[j][i];
+              }
+              average[i] = sum / 5;
+            }
+
+            // Save to IndexedDB
+            await offlineDB.faceDescriptors.put({
+              id: selectedStudent,
+              studentId: selectedStudent,
+              descriptor: Array.from(average) // serialize to standard array
+            });
+
+            // Mark student as registered in local state
+            const student = students.find((s) => s.id === selectedStudent);
+            if (student) {
+              student.faceRegistered = true;
+            }
+
+            setRegisterStatus('success');
+            stopCamera();
+            return;
+          }
         }
-        stopCamera();
+      } catch (err) {
+        console.error('Error during live scan:', err);
       }
-    }, 1000);
+
+      // Continue loop if not finished
+      if (descriptorsRef.current.length < 5 && isCameraActive) {
+        // Run loop slightly throttled to avoid UI lag (approx 3 frames per second check)
+        setTimeout(() => {
+          animationFrameRef.current = requestAnimationFrame(scanLoop);
+        }, 300);
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(scanLoop);
   };
 
   return (
@@ -123,7 +183,13 @@ const FaceRegisterPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
           <div className="card" style={{ padding: 'var(--space-lg)', position: 'relative' }}>
             <div className="face-capture-container" style={{ background: '#111827', position: 'relative', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
-              {isCameraActive ? (
+              {modelsLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--accent)', padding: 'var(--space-2xl)' }}>
+                  <RefreshCw className="animate-spin" size={48} style={{ marginBottom: 'var(--space-md)' }} />
+                  <h3>Loading Face AI Models...</h3>
+                  <p style={{ fontSize: 'var(--font-size-sm)', marginTop: '4px', color: 'var(--text-tertiary)' }}>Please wait while neural networks initialize.</p>
+                </div>
+              ) : isCameraActive ? (
                 <>
                   <video ref={videoRef} autoPlay playsInline muted />
                   {isCapturing && (
@@ -158,7 +224,7 @@ const FaceRegisterPage = () => {
             {/* Camera Controls */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
               {!isCameraActive ? (
-                <button className="btn btn-primary" onClick={startCamera} disabled={registerStatus === 'capturing'}>
+                <button className="btn btn-primary" onClick={startCamera} disabled={registerStatus === 'capturing' || modelsLoading}>
                   <Play size={16} /> Start Camera
                 </button>
               ) : (

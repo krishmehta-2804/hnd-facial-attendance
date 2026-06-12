@@ -5,9 +5,11 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAttendance } from '../contexts/AttendanceContext';
 import { ATTENDANCE_STATUS } from '../utils/constants';
 import { formatTime } from '../utils/dateUtils';
+import { loadModels, detectFace, createMatcher, matchFace } from '../services/faceRecognition';
+import offlineDB from '../services/offlineDB';
 import {
   Camera, UserCheck, List, Search, CheckCircle2, XCircle, Clock,
-  AlertCircle, ChevronDown, Play, Square, Scan
+  AlertCircle, ChevronDown, Play, Square, Scan, RefreshCw
 } from 'lucide-react';
 import '../styles/attendance.css';
 
@@ -22,9 +24,11 @@ const AttendancePage = () => {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [scanStatus, setScanStatus] = useState('idle'); // idle, scanning, recognized
   const [recognizedStudent, setRecognizedStudent] = useState(null);
+  const [modelsLoading, setModelsLoading] = useState(true);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const animationFrameRef = useRef(null);
   const scanIntervalRef = useRef(null);
 
   const classStudents = getClassStudents(selectedClass);
@@ -34,6 +38,20 @@ const AttendancePage = () => {
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     String(s.rollNo).includes(searchQuery)
   );
+
+  // Load models on page mount
+  useEffect(() => {
+    const initModels = async () => {
+      try {
+        await loadModels();
+      } catch (err) {
+        console.error('Error loading face-api models:', err);
+      } finally {
+        setModelsLoading(false);
+      }
+    };
+    initModels();
+  }, []);
 
   const getStudentStatus = (studentId) => {
     const record = todayRecords.find((r) => r.studentId === studentId);
@@ -66,7 +84,20 @@ const AttendancePage = () => {
       streamRef.current = stream;
       setIsCameraActive(true);
       setScanStatus('scanning');
-      startScanningSimulation();
+
+      // Fetch stored face descriptors from IndexedDB
+      const storedDescriptors = await offlineDB.faceDescriptors.toArray();
+      if (storedDescriptors.length > 0) {
+        const formatted = storedDescriptors.map(d => ({
+          label: d.studentId,
+          descriptors: [new Float32Array(d.descriptor)]
+        }));
+        const matcher = createMatcher(formatted, 0.55); // 0.55 distance threshold
+        startScanningSimulation(matcher);
+      } else {
+        // Fallback to simulation mode if no faces registered yet
+        startScanningSimulation(null);
+      }
     } catch (err) {
       console.error('Error starting camera:', err);
       alert('Could not access camera. Please check browser camera permissions.');
@@ -82,6 +113,9 @@ const AttendancePage = () => {
 
   // Stop Camera
   const stopCamera = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
     }
@@ -96,17 +130,57 @@ const AttendancePage = () => {
     }
   };
 
-  // Continuous scanning simulation
-  const startScanningSimulation = () => {
-    if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
+  // Continuous scanning simulation or real face-api loop
+  const startScanningSimulation = (matcher = null) => {
+    if (matcher) {
+      const scanLoop = async () => {
+        if (!videoRef.current || !isCameraActive) return;
 
+        try {
+          const detection = await detectFace(videoRef.current);
+          if (detection && detection.descriptor) {
+            const match = matchFace(detection.descriptor, matcher);
+            if (match && match.label !== 'unknown') {
+              const studentId = match.label;
+              const student = classStudents.find(s => s.id === studentId);
+              
+              if (student && !getStudentStatus(studentId)) {
+                const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', match.confidence);
+                if (record) {
+                  setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
+                }
+                setRecognizedStudent({ name: student.name, confidence: match.confidence });
+                setScanStatus('recognized');
+
+                setTimeout(() => {
+                  setRecognizedStudent(null);
+                  setScanStatus('scanning');
+                }, 2000);
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Real-time face recognition match error:', err);
+        }
+
+        if (isCameraActive) {
+          setTimeout(() => {
+            animationFrameRef.current = requestAnimationFrame(scanLoop);
+          }, 500); // Check frame every 500ms
+        }
+      };
+      
+      animationFrameRef.current = requestAnimationFrame(scanLoop);
+      return;
+    }
+
+    // Mock Simulation Fallback
+    if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
     scanIntervalRef.current = setInterval(() => {
       setScanStatus('scanning');
       setRecognizedStudent(null);
 
-      // Timeout for scan detection delay
       setTimeout(() => {
-        // Find unmarked students in the selected class
         const unmarked = classStudents.filter((s) => !getStudentStatus(s.id));
         
         if (unmarked.length === 0) {
@@ -115,11 +189,9 @@ const AttendancePage = () => {
           return;
         }
 
-        // Select a random student to simulate face match
         const student = unmarked[Math.floor(Math.random() * unmarked.length)];
         const confidence = (0.82 + Math.random() * 0.16).toFixed(2);
 
-        // Mark the student present in Context
         const record = markAttendance(student.id, ATTENDANCE_STATUS.PRESENT, 'facial', confidence);
         if (record) {
           setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
@@ -128,7 +200,6 @@ const AttendancePage = () => {
         setRecognizedStudent({ name: student.name, confidence });
         setScanStatus('recognized');
 
-        // Clear display text after 2 seconds
         setTimeout(() => {
           setRecognizedStudent(null);
           setScanStatus('scanning');
@@ -217,7 +288,13 @@ const AttendancePage = () => {
         /* Facial Recognition Mode */
         <div className="card" style={{ padding: 'var(--space-lg)', position: 'relative' }}>
           <div className="face-capture-container" style={{ background: '#111827', position: 'relative', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
-            {isCameraActive ? (
+            {modelsLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--accent)', padding: 'var(--space-2xl)' }}>
+                <RefreshCw className="animate-spin" size={48} style={{ marginBottom: 'var(--space-md)' }} />
+                <h3>Loading Face AI Models...</h3>
+                <p style={{ fontSize: 'var(--font-size-sm)', marginTop: '4px', color: 'var(--text-tertiary)' }}>Please wait while neural networks initialize.</p>
+              </div>
+            ) : isCameraActive ? (
               <>
                 <video ref={videoRef} autoPlay playsInline muted />
                 {scanStatus === 'scanning' && (
@@ -252,7 +329,7 @@ const AttendancePage = () => {
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
             {!isCameraActive ? (
-              <button className="btn btn-primary btn-lg" onClick={startCamera}>
+              <button className="btn btn-primary btn-lg" onClick={startCamera} disabled={modelsLoading}>
                 <Play size={18} /> Start Scanner Camera
               </button>
             ) : (
