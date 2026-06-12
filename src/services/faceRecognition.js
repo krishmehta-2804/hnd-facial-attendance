@@ -52,8 +52,8 @@ export const detectFace = async (videoElement) => {
 
   try {
     const options = new faceapi.TinyFaceDetectorOptions({
-      inputSize: 320,
-      scoreThreshold: 0.3,
+      inputSize: 416,
+      scoreThreshold: 0.22,
     });
     return await faceapi
       .detectSingleFace(videoElement, options)
@@ -72,8 +72,8 @@ export const detectAllFaces = async (videoElement) => {
 
   try {
     const options = new faceapi.TinyFaceDetectorOptions({
-      inputSize: 320,
-      scoreThreshold: 0.3,
+      inputSize: 416,
+      scoreThreshold: 0.22,
     });
     return await faceapi
       .detectAllFaces(videoElement, options)
@@ -86,7 +86,7 @@ export const detectAllFaces = async (videoElement) => {
 };
 
 // ─── Face Matcher ────────────────────────────────────────────
-export const createMatcher = (labeledDescriptors, threshold = 0.55) => {
+export const createMatcher = (labeledDescriptors, threshold = 0.6) => {
   const faceapi = getFaceApi();
   if (!faceapi) return null;
 

@@ -137,7 +137,7 @@ const AttendancePage = () => {
           label: d.studentId,
           descriptors: [new Float32Array(d.descriptor)]
         }));
-        const matcher = createMatcher(formatted, 0.55);
+        const matcher = createMatcher(formatted, 0.6);
         startScanningSimulation(matcher);
       } else {
         // Fallback to simulation mode if no faces registered OR models failed
@@ -200,12 +200,20 @@ const AttendancePage = () => {
               const studentId = match.label;
               const student = classStudentsRef.current.find(s => s.id === studentId);
               
-              if (student && !getStudentStatusFromRef(studentId)) {
-                const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', match.confidence);
-                if (record) {
-                  setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
+              if (student) {
+                const alreadyMarked = getStudentStatusFromRef(studentId);
+                if (!alreadyMarked) {
+                  const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', match.confidence);
+                  if (record) {
+                    setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
+                  }
                 }
-                setRecognizedStudent({ name: student.name, confidence: match.confidence });
+                
+                setRecognizedStudent({ 
+                  name: student.name, 
+                  confidence: match.confidence,
+                  alreadyMarked: !!alreadyMarked
+                });
                 setScanStatus('recognized');
 
                 setTimeout(() => {
@@ -407,10 +415,19 @@ const AttendancePage = () => {
                 )}
                 {scanStatus === 'recognized' && recognizedStudent && (
                   <>
-                    <div className="face-capture-guide" style={{ borderColor: 'var(--success)', boxShadow: '0 0 30px rgba(16, 185, 129, 0.4)' }} />
-                    <div className="face-capture-status recognized">
-                      <CheckCircle2 size={16} />
-                      {recognizedStudent.name} ({(recognizedStudent.confidence * 100).toFixed(0)}%)
+                    <div 
+                      className="face-capture-guide" 
+                      style={{ 
+                        borderColor: recognizedStudent.alreadyMarked ? '#F59E0B' : 'var(--success)', 
+                        boxShadow: recognizedStudent.alreadyMarked 
+                          ? '0 0 30px rgba(245, 158, 11, 0.5)' 
+                          : '0 0 30px rgba(16, 185, 129, 0.5)' 
+                      }} 
+                    />
+                    <div className={`face-capture-status ${recognizedStudent.alreadyMarked ? 'warning' : 'recognized'}`}
+                         style={recognizedStudent.alreadyMarked ? { background: '#F59E0B', color: 'white', display: 'flex', alignItems: 'center', gap: '6px' } : {}}>
+                      {recognizedStudent.alreadyMarked ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
+                      {recognizedStudent.name} {recognizedStudent.alreadyMarked ? '(Already Marked)' : `(${(recognizedStudent.confidence * 100).toFixed(0)}%)`}
                     </div>
                   </>
                 )}
