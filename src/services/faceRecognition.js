@@ -9,6 +9,8 @@ let modelsLoaded = false;
 export const loadModels = async (modelPath = '/models') => {
   if (modelsLoaded) return true;
   try {
+    console.log('Ensuring TensorFlow.js engine is ready...');
+    await faceapi.tf.ready();
     console.log('Loading face-api.js models from:', modelPath);
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(modelPath),
