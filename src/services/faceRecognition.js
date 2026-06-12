@@ -1,7 +1,7 @@
 /**
  * Facial Recognition Service - Integration with face-api.js
  */
-import * as faceapi from 'face-api.js';
+import * as faceapi from '@vladmandic/face-api';
 
 let modelsLoaded = false;
 
