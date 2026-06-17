@@ -650,7 +650,7 @@ const AttendancePage = () => {
             )}
           </div>
 
-          {isCameraActive && isDemoScanner && scanStatus === 'scanning' && (
+          {isCameraActive && scanStatus === 'scanning' && (
             <div className="animate-fade-in" style={{ 
               marginTop: 'var(--space-md)', 
               padding: 'var(--space-md)', 
@@ -663,10 +663,10 @@ const AttendancePage = () => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--warning-light)', fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>
                 <Scan size={16} style={{ color: 'var(--warning)' }} />
-                Demo Simulator Control Panel
+                Testing / Demo Simulator Control Panel
               </div>
               <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', margin: 0 }}>
-                Select a student to simulate stepping in front of the kiosk:
+                Select a student below to simulate them stepping in front of the kiosk (useful for testing):
               </p>
               <div style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'center', marginTop: '4px' }}>
                 <select 
