@@ -43,6 +43,8 @@ const AttendancePage = () => {
   const [modelsLoading, setModelsLoading] = useState(true);
   const [isDemoScanner, setIsDemoScanner] = useState(false);
   const [kioskCountdown, setKioskCountdown] = useState(0);
+  const [logs, setLogs] = useState([]);
+  const lastLogTimeRef = useRef(0);
 
   const isEditingLocked = currentUser?.role === 'teacher' && selectedDate !== todayStr;
 
@@ -130,10 +132,17 @@ const AttendancePage = () => {
     });
   };
 
+  const addLog = useCallback((msg, type = 'info') => {
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    setLogs((prev) => [`[${time}] [${type.toUpperCase()}] ${msg}`, ...prev.slice(0, 49)]);
+  }, []);
+
   // Start Camera — always starts immediately; models may still be loading in background
   const startCamera = async () => {
     setScanStatus('idle');
     setRecognizedStudent(null);
+    setLogs([]);
+    addLog('Requesting webcam access...', 'info');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480, facingMode: 'user' },
@@ -141,55 +150,67 @@ const AttendancePage = () => {
       streamRef.current = stream;
       setIsCameraActive(true);
       setScanStatus('scanning');
+      addLog('Webcam stream active. Dimensions: 640x480 (User facing)', 'success');
 
       // Wait for models if they are still loading (max 10s)
       if (!areModelsLoaded()) {
+        addLog('Face AI models are not fully loaded. Initializing network...', 'warning');
         try {
           await Promise.race([
             loadModels(),
             new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
           ]);
+          addLog('Face AI models loaded successfully.', 'success');
         } catch (e) {
-          console.warn('[AttendancePage] Models could not load:', e.message);
+          addLog(`Face AI models loading timeout: ${e.message}`, 'error');
         }
+      } else {
+        addLog('Face AI models verified loaded.', 'success');
       }
     } catch (err) {
+      addLog(`Camera Access Denied: ${err.message || err.toString()}`, 'error');
       console.error('Error starting camera:', err);
       alert('Could not access camera. Please check browser camera permissions.');
     }
   };
 
-  // Bind video stream and launch face detection loop reactively after mount/render
+  // Bind video stream once the video element has mounted in the DOM
   useEffect(() => {
     if (isCameraActive && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current;
-      
-      const setupScanner = async () => {
-        try {
-          const storedDescriptors = await offlineDB.faceDescriptors.toArray();
-          const currentClassStudentIds = new Set(classStudents.map(s => s.id));
-          const classDescriptors = storedDescriptors.filter(d => currentClassStudentIds.has(d.studentId));
-
-          if (areModelsLoaded() && classDescriptors.length > 0) {
-            setIsDemoScanner(false);
-            const formatted = classDescriptors.map(d => ({
-              label: d.studentId,
-              descriptors: [new Float32Array(d.descriptor)]
-            }));
-            const matcher = createMatcher(formatted, 0.65);
-            startScanningSimulation(matcher);
-          } else {
-            setIsDemoScanner(true);
-            startScanningSimulation(null);
-          }
-        } catch (err) {
-          console.error('[AttendancePage] Failed to fetch descriptors from IndexedDB:', err);
-        }
-      };
-      
-      setupScanner();
     }
-  }, [isCameraActive, selectedClass]);
+  }, [isCameraActive]);
+
+  const handleVideoPlay = async () => {
+    addLog('Webcam stream started playing. Loading face-api settings...', 'info');
+    try {
+      // Fetch stored face descriptors from IndexedDB
+      const storedDescriptors = await offlineDB.faceDescriptors.toArray();
+      const currentClassStudentIds = new Set(classStudents.map(s => s.id));
+      const classDescriptors = storedDescriptors.filter(d => currentClassStudentIds.has(d.studentId));
+
+      addLog(`Queried IndexedDB. Class has ${classDescriptors.length} registered face(s) out of ${classStudents.length} enrolled.`, 'info');
+
+      if (areModelsLoaded() && classDescriptors.length > 0) {
+        setIsDemoScanner(false);
+        const formatted = classDescriptors.map(d => ({
+          label: d.studentId,
+          descriptors: [new Float32Array(d.descriptor)]
+        }));
+        const matcher = createMatcher(formatted, 0.65);
+        addLog('FaceMatcher successfully compiled. Live recognition running.', 'success');
+        startScanningSimulation(matcher);
+      } else {
+        setIsDemoScanner(true);
+        addLog('Starting in Demo Simulation mode (no registered faces in this class).', 'warning');
+        startScanningSimulation(null);
+      }
+    } catch (err) {
+      addLog(`Failed to initialize matcher: ${err.message}`, 'error');
+      setIsDemoScanner(true);
+      startScanningSimulation(null);
+    }
+  };
 
   // Stop Camera
   const stopCamera = () => {
@@ -361,11 +382,27 @@ const AttendancePage = () => {
               }
             }
 
+            // Throttled logging to avoid layout stutter
+            const now = Date.now();
+            if (!lastLogTimeRef.current || now - lastLogTimeRef.current > 1500) {
+              lastLogTimeRef.current = now;
+              addLog(`Face detected (Confidence: ${detection.detection.score.toFixed(2)})`, 'info');
+              if (match) {
+                if (match.label !== 'unknown') {
+                  const student = classStudentsRef.current.find(s => s.id === match.label);
+                  addLog(`Recognized: ${student ? student.name : match.label} (Conf: ${match.confidence})`, 'success');
+                } else {
+                  addLog(`Not recognized (Best Match Distance: ${match.distance.toFixed(2)})`, 'warning');
+                }
+              }
+            }
+
             if (match && match.label !== 'unknown') {
               const studentId = match.label;
               const student = classStudentsRef.current.find(s => s.id === studentId);
               
               if (student) {
+                addLog(`Success check-in: marking ${student.name} present`, 'success');
                 const alreadyMarked = getStudentStatusFromRef(studentId);
                 if (!alreadyMarked) {
                   const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', match.confidence, selectedDateRef.current);
@@ -394,8 +431,16 @@ const AttendancePage = () => {
                 setKioskCountdown(2);
               }
             }
+          } else {
+            // Log frame scan with no face (throttled)
+            const now = Date.now();
+            if (!lastLogTimeRef.current || now - lastLogTimeRef.current > 3000) {
+              lastLogTimeRef.current = now;
+              addLog('Frame analyzed: no face detected in view.', 'info');
+            }
           }
         } catch (err) {
+          addLog(`Matching Loop Error: ${err.message || err.toString()}`, 'error');
           console.error('Real-time face recognition match error:', err);
         }
 
@@ -604,7 +649,7 @@ const AttendancePage = () => {
               </div>
             ) : isCameraActive ? (
               <div style={{ position: 'relative', width: '640px', height: '480px', margin: '0 auto', overflow: 'hidden', borderRadius: 'var(--radius-lg)' }}>
-                <video ref={videoRef} autoPlay playsInline muted width="640" height="480" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                <video ref={videoRef} autoPlay playsInline muted width="640" height="480" onPlay={handleVideoPlay} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 <canvas ref={canvasRef} width="640" height="480" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 5, pointerEvents: 'none' }} />
                 {scanStatus === 'scanning' && (
                   <>
@@ -766,6 +811,50 @@ const AttendancePage = () => {
                 >
                   Simulate Scan
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* Diagnostics Log Panel */}
+          {isCameraActive && (
+            <div className="card" style={{ marginTop: 'var(--space-md)', padding: 'var(--space-md)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-sm)' }}>
+                <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', color: 'var(--accent-light)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🔍</span> Live Diagnostics Console
+                </div>
+                <button 
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setLogs([])}
+                  style={{ padding: '2px 8px', fontSize: 'var(--font-size-xs)' }}
+                >
+                  Clear Log
+                </button>
+              </div>
+              <div style={{ 
+                background: '#090f1e', 
+                padding: '12px', 
+                borderRadius: 'var(--radius-sm)', 
+                fontFamily: 'monospace', 
+                fontSize: '11px', 
+                height: '140px', 
+                overflowY: 'auto',
+                border: '1px solid var(--border)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                textAlign: 'left'
+              }}>
+                {logs.map((log, i) => {
+                  let color = '#34D399'; // green
+                  if (log.includes('[ERROR]')) color = '#EF4444'; // red
+                  if (log.includes('[WARNING]')) color = '#F59E0B'; // orange
+                  return (
+                    <div key={i} style={{ color }}>{log}</div>
+                  );
+                })}
+                {logs.length === 0 && (
+                  <div style={{ color: 'var(--text-tertiary)' }}>No events logged yet. Show your face to the camera to run matching diagnostics.</div>
+                )}
               </div>
             </div>
           )}
