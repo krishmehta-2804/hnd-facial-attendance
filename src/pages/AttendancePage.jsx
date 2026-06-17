@@ -243,6 +243,34 @@ const AttendancePage = () => {
     }
   };
 
+  const simulateStudentScan = (studentId) => {
+    const student = classStudentsRef.current.find(s => s.id === studentId);
+    if (!student) return;
+
+    const confidence = (0.85 + Math.random() * 0.14).toFixed(2);
+    const alreadyMarked = getStudentStatusFromRef(studentId);
+
+    if (!alreadyMarked) {
+      const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', confidence, selectedDateRef.current);
+      if (record) {
+        setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
+      }
+    }
+
+    setRecognizedStudent({
+      name: student.name,
+      rollNo: student.rollNo,
+      confidence,
+      alreadyMarked: !!alreadyMarked
+    });
+    setScanStatus('recognized');
+    playSuccessSound();
+    if (videoRef.current) {
+      try { videoRef.current.pause(); } catch (e) {}
+    }
+    setKioskCountdown(2);
+  };
+
   useEffect(() => {
     if (kioskCountdown <= 0) return;
     const timer = setTimeout(() => {
@@ -320,35 +348,8 @@ const AttendancePage = () => {
       return;
     }
 
-    // Mock Simulation Fallback
+    // Mock Simulation Fallback: No auto-loop, user triggers simulated scan manually
     if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
-    scanIntervalRef.current = setInterval(() => {
-      if (scanStatusRef.current === 'recognized') return;
-
-      setTimeout(() => {
-        const unmarked = classStudentsRef.current.filter((s) => !getStudentStatusFromRef(s.id));
-        
-        if (unmarked.length === 0) {
-          stopCamera();
-          alert('All students in this class have been marked present!');
-          return;
-        }
-
-        const student = unmarked[Math.floor(Math.random() * unmarked.length)];
-        const confidence = (0.82 + Math.random() * 0.16).toFixed(2);
-
-        const record = markAttendance(student.id, ATTENDANCE_STATUS.PRESENT, 'facial', confidence, selectedDateRef.current);
-        if (record) {
-          setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
-        }
-
-        setRecognizedStudent({ name: student.name, rollNo: student.rollNo, confidence, alreadyMarked: false });
-        setScanStatus('recognized');
-        playSuccessSound();
-        setKioskCountdown(2);
-      }, 1500);
-
-    }, 4000);
   };
 
   // Stop camera on tab change or page unmount
@@ -547,7 +548,7 @@ const AttendancePage = () => {
                     <div className="face-capture-guide animate-pulse" />
                     <div className="face-capture-status detecting">
                       <Scan className="animate-spin" size={16} />
-                      {isDemoScanner ? 'Simulating Classroom Scanner...' : 'Scanning Classroom (Live)...'}
+                      {isDemoScanner ? 'Simulating Kiosk Check-In...' : 'Kiosk Check-In Active (Live)...'}
                     </div>
                   </>
                 )}
@@ -648,6 +649,63 @@ const AttendancePage = () => {
               </button>
             )}
           </div>
+
+          {isCameraActive && isDemoScanner && scanStatus === 'scanning' && (
+            <div className="animate-fade-in" style={{ 
+              marginTop: 'var(--space-md)', 
+              padding: 'var(--space-md)', 
+              background: 'var(--bg-secondary)', 
+              borderRadius: 'var(--radius)', 
+              border: '1px solid var(--border)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-sm)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--warning-light)', fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>
+                <Scan size={16} style={{ color: 'var(--warning)' }} />
+                Demo Simulator Control Panel
+              </div>
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', margin: 0 }}>
+                Select a student to simulate stepping in front of the kiosk:
+              </p>
+              <div style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'center', marginTop: '4px' }}>
+                <select 
+                  id="demo-student-scan-select"
+                  style={{ 
+                    flex: 1, 
+                    padding: '8px 12px', 
+                    fontSize: 'var(--font-size-sm)',
+                    background: 'var(--bg-input)',
+                    color: 'var(--text)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)'
+                  }}
+                >
+                  {classStudents.filter(s => !getStudentStatus(s.id)).map(s => (
+                    <option key={s.id} value={s.id}>
+                      Roll #{s.rollNo} - {s.name}
+                    </option>
+                  ))}
+                  {classStudents.filter(s => !getStudentStatus(s.id)).length === 0 && (
+                    <option value="">All students marked present</option>
+                  )}
+                </select>
+                <button 
+                  className="btn btn-warning"
+                  style={{ padding: '8px 16px', fontSize: 'var(--font-size-xs)' }}
+                  onClick={() => {
+                    const selectEl = document.getElementById('demo-student-scan-select');
+                    if (selectEl && selectEl.value) {
+                      simulateStudentScan(selectEl.value);
+                    }
+                  }}
+                  disabled={classStudents.filter(s => !getStudentStatus(s.id)).length === 0}
+                >
+                  Simulate Scan
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         /* Manual Mode */
