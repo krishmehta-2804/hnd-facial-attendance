@@ -4,15 +4,49 @@
 import { useState, useMemo } from 'react';
 import { useAttendance } from '../contexts/AttendanceContext';
 import { calculateStudentAttendanceStats, getAttendanceStatus } from '../utils/attendanceCalculations';
-import { Search, Grid3X3, List, UserPlus, Filter, ChevronRight } from 'lucide-react';
+import { Search, Grid3X3, List, UserPlus, Filter, ChevronRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import '../styles/students.css';
 
 const StudentsPage = () => {
-  const { students, classes, records } = useAttendance();
+  const { students, classes, records, recordFeePayment } = useAttendance();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClass, setSelectedClass] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const getFeeStatus = (student) => {
+    const paid = student.feesPaid || 0;
+    const currentMonth = new Date().getMonth();
+    
+    // Academic year starts in April (Month index 3)
+    let monthsElapsed = currentMonth - 3;
+    if (monthsElapsed < 0) monthsElapsed += 12;
+    monthsElapsed += 1; // Count current month
+
+    const targetDue = monthsElapsed * 200;
+    if (paid < targetDue) {
+      return {
+        status: 'arrears',
+        amount: targetDue - paid,
+        label: `₹${targetDue - paid} Due`,
+        color: 'danger'
+      };
+    } else if (paid === targetDue) {
+      return {
+        status: 'paid',
+        amount: 0,
+        label: 'Paid Up',
+        color: 'success'
+      };
+    } else {
+      return {
+        status: 'advance',
+        amount: paid - targetDue,
+        label: `₹${paid - targetDue} Adv`,
+        color: 'purple'
+      };
+    }
+  };
 
   const filteredStudents = useMemo(() => {
     let result = students;
@@ -148,10 +182,19 @@ const StudentsPage = () => {
                   </span>
                 </div>
 
-                <div style={{ marginTop: 'var(--space-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ marginTop: 'var(--space-sm)', display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span className={`badge badge-${status.color === 'success' ? 'success' : status.color === 'warning' ? 'warning' : 'danger'}`}>
                     {status.label}
                   </span>
+                  {(() => {
+                    const feeInfo = getFeeStatus(student);
+                    return (
+                      <span className={`badge badge-${feeInfo.color === 'purple' ? 'purple' : feeInfo.color}`}
+                            style={feeInfo.color === 'purple' ? { background: 'rgba(139, 92, 246, 0.15)', color: '#8B5CF6', border: '1px solid rgba(139, 92, 246, 0.3)' } : {}}>
+                        {feeInfo.label}
+                      </span>
+                    );
+                  })()}
                   {student.faceRegistered && (
                     <span className="badge badge-info">Face Registered</span>
                   )}
@@ -175,6 +218,7 @@ const StudentsPage = () => {
                   <th>Late</th>
                   <th>Attendance %</th>
                   <th>Status</th>
+                  <th>Fees</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,6 +248,17 @@ const StudentsPage = () => {
                       <td style={{ color: 'var(--warning)', fontWeight: 600 }}>{stats.late}</td>
                       <td><span className={`attendance-pct ${pctClass}`}>{stats.percentage}%</span></td>
                       <td><span className={`badge badge-${status.color === 'success' ? 'success' : status.color === 'warning' ? 'warning' : 'danger'}`}>{status.label}</span></td>
+                      <td>
+                        {(() => {
+                          const feeInfo = getFeeStatus(student);
+                          return (
+                            <span className={`badge badge-${feeInfo.color === 'purple' ? 'purple' : feeInfo.color}`}
+                                  style={feeInfo.color === 'purple' ? { background: 'rgba(139, 92, 246, 0.15)', color: '#8B5CF6', border: '1px solid rgba(139, 92, 246, 0.3)' } : {}}>
+                              {feeInfo.label}
+                            </span>
+                          );
+                        })()}
+                      </td>
                     </tr>
                   );
                 })}
@@ -282,7 +337,68 @@ const StudentsPage = () => {
                 );
               })()}
 
-              <div style={{ display: 'flex', gap: 'var(--space-sm)', justifyContent: 'flex-end' }}>
+              {/* Fees and Payments Section */}
+              {(() => {
+                const currentStudent = students.find((s) => s.id === selectedStudent.id) || selectedStudent;
+                const feeInfo = getFeeStatus(currentStudent);
+                return (
+                  <div style={{ marginTop: 'var(--space-xl)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)' }}>
+                    <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-sm)' }}>Fees & Payments (₹200/month)</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-md)', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)', background: 'var(--bg-secondary)', padding: 'var(--space-md)', borderRadius: 'var(--radius)' }}>
+                      <div>
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Total Paid:</span>
+                        <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--text)' }}>₹{currentStudent.feesPaid || 0}</div>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Current Status:</span>
+                        <div>
+                          <span className={`badge badge-${feeInfo.color === 'purple' ? 'purple' : feeInfo.color}`}
+                                style={feeInfo.color === 'purple' ? { background: 'rgba(139, 92, 246, 0.15)', color: '#8B5CF6', border: '1px solid rgba(139, 92, 246, 0.3)' } : {}}>
+                            {feeInfo.label}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Record Payment Presets */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)', fontWeight: 600 }}>Record Payment:</span>
+                      <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                        <button className="btn btn-sm btn-ghost" onClick={() => recordFeePayment(currentStudent.id, 200)} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹200 (1 Mo)</button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => recordFeePayment(currentStudent.id, 400)} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹400 (2 Mo)</button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => recordFeePayment(currentStudent.id, 600)} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹600 (3 Mo)</button>
+                      </div>
+                      <div style={{ display: 'flex', gap: 'var(--space-sm)', marginTop: '4px' }}>
+                        <input 
+                          type="number" 
+                          id="customFeeAmount" 
+                          placeholder="Custom Amount (₹)" 
+                          style={{ flex: 1, padding: '8px 12px', height: '36px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)', fontSize: 'var(--font-size-sm)' }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const val = parseInt(e.target.value);
+                              if (val > 0) {
+                                recordFeePayment(currentStudent.id, val);
+                                e.target.value = '';
+                              }
+                            }
+                          }}
+                        />
+                        <button className="btn btn-primary btn-sm" onClick={() => {
+                          const input = document.getElementById('customFeeAmount');
+                          const val = parseInt(input.value);
+                          if (val > 0) {
+                            recordFeePayment(currentStudent.id, val);
+                            input.value = '';
+                          }
+                        }}>Pay Custom</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div style={{ display: 'flex', gap: 'var(--space-sm)', justifyContent: 'flex-end', marginTop: 'var(--space-lg)' }}>
                 <button className="btn btn-ghost" onClick={() => setSelectedStudent(null)}>Close</button>
               </div>
             </div>

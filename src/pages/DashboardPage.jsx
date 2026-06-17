@@ -10,15 +10,26 @@ import TrendChart from '../components/dashboard/TrendChart';
 import ClassWiseTable from '../components/dashboard/ClassWiseTable';
 import AlertsPanel from '../components/dashboard/AlertsPanel';
 import MealCounter from '../components/dashboard/MealCounter';
-import { Users, UserCheck, UserX, Clock, BarChart3, Camera, FileText, UtensilsCrossed, CheckCircle2 } from 'lucide-react';
+import { Users, UserCheck, UserX, Clock, BarChart3, Camera, FileText, UtensilsCrossed, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
 import { calculateTrend, calculateStudentAttendanceStats, getAttendanceStatus } from '../utils/attendanceCalculations';
+import { format } from 'date-fns';
 import '../styles/dashboard.css';
 
 const DashboardPage = () => {
   const { currentUser } = useAuth();
-  const { stats, students, records, getStudentTodayStatus } = useAttendance();
+  const { stats, students, records, getStudentTodayStatus, getGenderStats, mealsOrdered, classes } = useAttendance();
 
   const trend = calculateTrend(stats.presentToday, stats.presentYesterday);
+  
+  // Calculate today's manual meal wastage metrics for warning alerts
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const todayOrderedTotal = (classes || []).reduce((sum, cls) => sum + (mealsOrdered[`${todayStr}_${cls.id}`] || 0), 0);
+  const todayPresentTotal = stats.presentToday + stats.lateToday;
+  const todayWastageTotal = Math.max(0, todayOrderedTotal - todayPresentTotal);
+  const todayWastagePct = todayOrderedTotal > 0 ? (todayWastageTotal / todayOrderedTotal) * 100 : 0;
+  const isExtremeWastage = todayWastagePct > 15;
+
+  const genderStats = getGenderStats('all');
 
   // If the logged-in user is a Parent, render the Parent Portal Dashboard
   if (currentUser?.role === 'parent') {
@@ -33,6 +44,29 @@ const DashboardPage = () => {
             <p>Parent Portal · {demoSchool.name}</p>
           </div>
         </div>
+
+        {/* Absence Alerts */}
+        {parentChildren.filter(child => getStudentTodayStatus(child.id) === 'absent').map((child) => (
+          <div key={child.id} className="alert alert-danger animate-fade-in" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-md)',
+            padding: 'var(--space-md)',
+            border: '1px solid var(--danger)',
+            background: 'rgba(239, 68, 68, 0.08)',
+            borderRadius: 'var(--radius)',
+            color: 'var(--danger-light)',
+            marginBottom: 'var(--space-lg)'
+          }}>
+            <AlertCircle size={20} style={{ color: 'var(--danger)', flexShrink: 0 }} />
+            <div>
+              <h4 style={{ color: 'var(--danger-light)', margin: 0, fontWeight: 700, fontSize: 'var(--font-size-md)' }}>Absence Alert</h4>
+              <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: 'var(--font-size-sm)' }}>
+                ⚠️ Absence Alert: <strong>{child.name}</strong> was marked <strong>ABSENT</strong> today. Please contact the school.
+              </p>
+            </div>
+          </div>
+        ))}
 
         {/* Children Overview */}
         <h3 style={{ marginBottom: 'var(--space-md)' }}>My Children</h3>
@@ -127,6 +161,35 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* Active Food Wastage Warning Alert */}
+      {isExtremeWastage && (
+        <div className="alert alert-danger" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-md)',
+          padding: 'var(--space-md)',
+          border: '1px solid var(--danger)',
+          background: 'rgba(239, 68, 68, 0.08)',
+          borderRadius: 'var(--radius)',
+          color: 'var(--danger-light)',
+          marginBottom: 'var(--space-lg)',
+          boxShadow: 'var(--shadow-glow-danger)'
+        }}>
+          <AlertTriangle size={24} style={{ color: 'var(--danger)', flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <h4 style={{ color: 'var(--danger-light)', margin: 0, fontWeight: 700, fontSize: 'var(--font-size-md)' }}>
+              Extreme Food Wastage Alert ({todayWastagePct.toFixed(1)}%)
+            </h4>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: 'var(--font-size-sm)' }}>
+              ⚠️ Today's mid-day meal wastage is at {todayWastagePct.toFixed(1)}% ({todayWastageTotal} out of {todayOrderedTotal} meals wasted). Each meal costs ₹34.50, resulting in a loss of ₹{(todayWastageTotal * 34.5).toLocaleString('en-IN')}. Please optimize orders.
+            </p>
+          </div>
+          <a href="/meals" className="btn btn-danger" style={{ padding: '6px 12px', fontSize: 'var(--font-size-xs)' }}>
+            Optimize Orders
+          </a>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="stats-grid">
         <div className="animate-fade-in-up stagger-1">
@@ -185,14 +248,70 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Meal Counter */}
-      <div className="stats-grid" style={{ gridTemplateColumns: '1fr', marginBottom: 'var(--space-xl)' }}>
+      {/* Meal & Gender Section */}
+      <div className="two-col-grid" style={{ marginBottom: 'var(--space-xl)' }}>
         <div className="animate-fade-in-up stagger-5">
           <MealCounter
             presentCount={stats.presentToday + stats.lateToday}
             totalEnrolled={stats.totalEnrolled}
             yesterdayCount={stats.presentYesterday}
           />
+        </div>
+        <div className="animate-fade-in-up stagger-5">
+          <div className="card" style={{ height: '100%' }}>
+            <div className="card-header" style={{ marginBottom: 'var(--space-md)' }}>
+              <div>
+                <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Users size={20} style={{ color: 'var(--accent)' }} />
+                  Gender Stats Breakdown
+                </div>
+                <div className="card-subtitle">Enrolled, present, and absent by gender today</div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
+              {/* Boys Stats */}
+              <div style={{ padding: 'var(--space-md)', background: 'rgba(59, 130, 246, 0.04)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+                <h4 style={{ color: 'var(--accent-light)', marginBottom: 'var(--space-sm)', fontSize: 'var(--font-size-md)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>👦</span> Boys
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 'var(--font-size-sm)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Enrolled:</span>
+                    <span style={{ fontWeight: 600 }}>{genderStats.enrolledBoys}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Present:</span>
+                    <span style={{ fontWeight: 600, color: 'var(--success)' }}>{genderStats.presentBoys}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Absent:</span>
+                    <span style={{ fontWeight: 600, color: 'var(--danger-light)' }}>{genderStats.absentBoys}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Girls Stats */}
+              <div style={{ padding: 'var(--space-md)', background: 'rgba(236, 72, 153, 0.04)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+                <h4 style={{ color: '#F472B6', marginBottom: 'var(--space-sm)', fontSize: 'var(--font-size-md)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>👧</span> Girls
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 'var(--font-size-sm)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Enrolled:</span>
+                    <span style={{ fontWeight: 600 }}>{genderStats.enrolledGirls}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Present:</span>
+                    <span style={{ fontWeight: 600, color: 'var(--success)' }}>{genderStats.presentGirls}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Absent:</span>
+                    <span style={{ fontWeight: 600, color: 'var(--danger-light)' }}>{genderStats.absentGirls}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -3,19 +3,34 @@
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAttendance } from '../contexts/AttendanceContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ATTENDANCE_STATUS } from '../utils/constants';
 import { formatTime } from '../utils/dateUtils';
+import { format } from 'date-fns';
 import { loadModels, detectFace, createMatcher, matchFace, areModelsLoaded } from '../services/faceRecognition';
 // areModelsLoaded is imported but we allow camera even while loading
 import offlineDB from '../services/offlineDB';
 import {
   Camera, UserCheck, List, Search, CheckCircle2, XCircle, Clock,
-  AlertCircle, ChevronDown, Play, Square, Scan, RefreshCw
+  AlertCircle, ChevronDown, Play, Square, Scan, RefreshCw, Lock
 } from 'lucide-react';
 import '../styles/attendance.css';
 
 const AttendancePage = () => {
-  const { students, classes, todayRecords, markAttendance, getClassStudents, getClassTodayStats } = useAttendance();
+  const { currentUser } = useAuth();
+  const {
+    students,
+    classes,
+    records,
+    getStudentStatusByDate,
+    markAttendance,
+    getClassStudents,
+    getClassTodayStats,
+    getGenderStats,
+  } = useAttendance();
+
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const [selectedDate, setSelectedDate] = useState(todayStr);
   const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
   const [mode, setMode] = useState('manual'); // 'manual' or 'facial'
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +42,9 @@ const AttendancePage = () => {
   const [recognizedStudent, setRecognizedStudent] = useState(null);
   const [modelsLoading, setModelsLoading] = useState(true);
   const [isDemoScanner, setIsDemoScanner] = useState(false);
+  const [kioskCountdown, setKioskCountdown] = useState(0);
+
+  const isEditingLocked = currentUser?.role === 'teacher' && selectedDate !== todayStr;
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -34,21 +52,23 @@ const AttendancePage = () => {
   const scanIntervalRef = useRef(null);
 
   const classStudents = getClassStudents(selectedClass);
-  const classStats = getClassTodayStats(selectedClass);
+  const classStats = getClassTodayStats(selectedClass, selectedDate);
+  const genderStats = getGenderStats(selectedClass, selectedDate);
 
   // Refs to avoid React hook state closures in requestAnimationFrame loop
   const classStudentsRef = useRef(classStudents);
-  const todayRecordsRef = useRef(todayRecords);
+  const recordsRef = useRef(records);
   const scanStatusRef = useRef(scanStatus);
   const isCameraActiveRef = useRef(isCameraActive);
+  const selectedDateRef = useRef(selectedDate);
 
   useEffect(() => {
     classStudentsRef.current = classStudents;
   }, [classStudents]);
 
   useEffect(() => {
-    todayRecordsRef.current = todayRecords;
-  }, [todayRecords]);
+    recordsRef.current = records;
+  }, [records]);
 
   useEffect(() => {
     scanStatusRef.current = scanStatus;
@@ -57,6 +77,10 @@ const AttendancePage = () => {
   useEffect(() => {
     isCameraActiveRef.current = isCameraActive;
   }, [isCameraActive]);
+
+  useEffect(() => {
+    selectedDateRef.current = selectedDate;
+  }, [selectedDate]);
 
   const filteredStudents = classStudents.filter((s) =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -78,26 +102,29 @@ const AttendancePage = () => {
   }, []);
 
   const getStudentStatus = (studentId) => {
-    const record = todayRecords.find((r) => r.studentId === studentId);
-    return record?.status || null;
+    return getStudentStatusByDate(studentId, selectedDate);
   };
 
   const getStudentStatusFromRef = (studentId) => {
-    const record = todayRecordsRef.current.find((r) => r.studentId === studentId);
+    const record = recordsRef.current.find(
+      (r) => r.studentId === studentId && r.date === selectedDateRef.current
+    );
     return record?.status || null;
   };
 
   const handleMark = useCallback((studentId, status) => {
-    const record = markAttendance(studentId, status, 'manual');
+    if (isEditingLocked) return;
+    const record = markAttendance(studentId, status, 'manual', null, selectedDate);
     if (record) {
       setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
     }
-  }, [markAttendance]);
+  }, [markAttendance, isEditingLocked, selectedDate]);
 
   const handleMarkAll = (status) => {
+    if (isEditingLocked) return;
     classStudents.forEach((student) => {
       if (!getStudentStatus(student.id)) {
-        markAttendance(student.id, status, 'manual');
+        markAttendance(student.id, status, 'manual', null, selectedDate);
       }
     });
   };
@@ -176,12 +203,66 @@ const AttendancePage = () => {
     }
   };
 
+  const playSuccessSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+      gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      
+      oscillator.start();
+      
+      setTimeout(() => {
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+      }, 100);
+      
+      setTimeout(() => {
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        setTimeout(() => {
+          oscillator.stop();
+          audioCtx.close();
+        }, 150);
+      }, 200);
+    } catch (e) {
+      console.warn('Web Audio API not supported or blocked:', e);
+    }
+  };
+
+  const handleNextStudent = () => {
+    setRecognizedStudent(null);
+    setScanStatus('scanning');
+    setKioskCountdown(0);
+    if (videoRef.current && isCameraActiveRef.current) {
+      try { videoRef.current.play(); } catch (e) {}
+    }
+  };
+
+  useEffect(() => {
+    if (kioskCountdown <= 0) return;
+    const timer = setTimeout(() => {
+      setKioskCountdown(prev => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [kioskCountdown]);
+
+  useEffect(() => {
+    if (scanStatus === 'recognized' && kioskCountdown === 0) {
+      handleNextStudent();
+    }
+  }, [kioskCountdown, scanStatus]);
+
   // Continuous scanning simulation or real face-api loop
   const startScanningSimulation = (matcher = null) => {
     if (matcher) {
       const scanLoop = async () => {
         if (!videoRef.current || !isCameraActiveRef.current) return;
-
+ 
         // Skip detection if we are currently displaying a recognized student
         if (scanStatusRef.current === 'recognized') {
           if (isCameraActiveRef.current) {
@@ -203,7 +284,7 @@ const AttendancePage = () => {
               if (student) {
                 const alreadyMarked = getStudentStatusFromRef(studentId);
                 if (!alreadyMarked) {
-                  const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', match.confidence);
+                  const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', match.confidence, selectedDateRef.current);
                   if (record) {
                     setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
                   }
@@ -211,15 +292,16 @@ const AttendancePage = () => {
                 
                 setRecognizedStudent({ 
                   name: student.name, 
+                  rollNo: student.rollNo,
                   confidence: match.confidence,
                   alreadyMarked: !!alreadyMarked
                 });
                 setScanStatus('recognized');
-
-                setTimeout(() => {
-                  setRecognizedStudent(null);
-                  setScanStatus('scanning');
-                }, 2000);
+                playSuccessSound();
+                if (videoRef.current) {
+                  try { videoRef.current.pause(); } catch (e) {}
+                }
+                setKioskCountdown(2);
               }
             }
           }
@@ -241,8 +323,7 @@ const AttendancePage = () => {
     // Mock Simulation Fallback
     if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
     scanIntervalRef.current = setInterval(() => {
-      setScanStatus('scanning');
-      setRecognizedStudent(null);
+      if (scanStatusRef.current === 'recognized') return;
 
       setTimeout(() => {
         const unmarked = classStudentsRef.current.filter((s) => !getStudentStatusFromRef(s.id));
@@ -256,19 +337,15 @@ const AttendancePage = () => {
         const student = unmarked[Math.floor(Math.random() * unmarked.length)];
         const confidence = (0.82 + Math.random() * 0.16).toFixed(2);
 
-        const record = markAttendance(student.id, ATTENDANCE_STATUS.PRESENT, 'facial', confidence);
+        const record = markAttendance(student.id, ATTENDANCE_STATUS.PRESENT, 'facial', confidence, selectedDateRef.current);
         if (record) {
           setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
         }
 
-        setRecognizedStudent({ name: student.name, confidence });
+        setRecognizedStudent({ name: student.name, rollNo: student.rollNo, confidence, alreadyMarked: false });
         setScanStatus('recognized');
-
-        setTimeout(() => {
-          setRecognizedStudent(null);
-          setScanStatus('scanning');
-        }, 2000);
-
+        playSuccessSound();
+        setKioskCountdown(2);
       }, 1500);
 
     }, 4000);
@@ -284,18 +361,67 @@ const AttendancePage = () => {
 
   return (
     <div className="attendance-page">
-      <div className="page-header">
+      <div className="page-header" style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-md)', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1>Mark Attendance</h1>
-          <p>Select a class and mark attendance for today</p>
+          <p>Select a class and mark attendance for {selectedDate === todayStr ? 'today' : selectedDate}</p>
         </div>
-        <div className="page-actions">
-          <button className="btn btn-success btn-sm" onClick={() => handleMarkAll(ATTENDANCE_STATUS.PRESENT)}>
-            <CheckCircle2 size={14} />
-            Mark All Present
-          </button>
+        
+        <div style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'center' }}>
+          {/* Date Picker */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '6px 12px', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+            <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--text-secondary)' }}>Date:</span>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              disabled={currentUser?.role === 'teacher'}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                outline: 'none',
+                fontFamily: 'Inter',
+                fontSize: 'var(--font-size-sm)',
+                cursor: currentUser?.role === 'teacher' ? 'not-allowed' : 'pointer'
+              }}
+            />
+            {currentUser?.role === 'teacher' && <Lock size={12} style={{ color: 'var(--text-tertiary)', marginLeft: '4px' }} />}
+          </div>
+
+          <div className="page-actions">
+            <button 
+              className="btn btn-success btn-sm" 
+              onClick={() => handleMarkAll(ATTENDANCE_STATUS.PRESENT)}
+              disabled={isEditingLocked}
+              style={isEditingLocked ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+            >
+              <CheckCircle2 size={14} />
+              Mark All Present
+            </button>
+          </div>
         </div>
       </div>
+
+      {isEditingLocked && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '12px var(--space-md)',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.2)',
+          borderRadius: 'var(--radius-md)',
+          color: 'var(--danger-light)',
+          marginBottom: 'var(--space-md)',
+          fontSize: 'var(--font-size-sm)'
+        }}>
+          <AlertCircle size={18} style={{ flexShrink: 0 }} />
+          <div>
+            <strong>Attendance Editing Locked:</strong> As a teacher, you only have permissions to modify attendance for the current day. Please contact the Headmaster to edit past records.
+          </div>
+        </div>
+      )}
 
       {/* Mode Tabs */}
       <div className="attendance-mode-tabs">
@@ -329,22 +455,34 @@ const AttendancePage = () => {
       </div>
 
       {/* Class Stats Summary */}
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: 'var(--space-lg)' }}>
+      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 'var(--space-md)', marginBottom: 'var(--space-lg)' }}>
         <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, color: 'var(--text)' }}>{classStats.total}</div>
+          <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: 'var(--text)' }}>{classStats.total}</div>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Total</div>
         </div>
         <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, color: 'var(--success)' }}>{classStats.present}</div>
+          <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: 'var(--success)' }}>{classStats.present}</div>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Present</div>
         </div>
         <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, color: 'var(--danger)' }}>{classStats.absent}</div>
+          <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: 'var(--danger)' }}>{classStats.absent}</div>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Absent</div>
         </div>
         <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, color: 'var(--warning)' }}>{classStats.late}</div>
+          <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: 'var(--warning)' }}>{classStats.late}</div>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Late</div>
+        </div>
+        <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: '#3B82F6' }}>
+            {genderStats.presentBoys}/{genderStats.enrolledBoys}
+          </div>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Boys (Pres/Total)</div>
+        </div>
+        <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: '#EC4899' }}>
+            {genderStats.presentGirls}/{genderStats.enrolledGirls}
+          </div>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Girls (Pres/Total)</div>
         </div>
       </div>
 
@@ -414,22 +552,69 @@ const AttendancePage = () => {
                   </>
                 )}
                 {scanStatus === 'recognized' && recognizedStudent && (
-                  <>
-                    <div 
-                      className="face-capture-guide" 
-                      style={{ 
-                        borderColor: recognizedStudent.alreadyMarked ? '#F59E0B' : 'var(--success)', 
-                        boxShadow: recognizedStudent.alreadyMarked 
-                          ? '0 0 30px rgba(245, 158, 11, 0.5)' 
-                          : '0 0 30px rgba(16, 185, 129, 0.5)' 
-                      }} 
-                    />
-                    <div className={`face-capture-status ${recognizedStudent.alreadyMarked ? 'warning' : 'recognized'}`}
-                         style={recognizedStudent.alreadyMarked ? { background: '#F59E0B', color: 'white', display: 'flex', alignItems: 'center', gap: '6px' } : {}}>
-                      {recognizedStudent.alreadyMarked ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
-                      {recognizedStudent.name} {recognizedStudent.alreadyMarked ? '(Already Marked)' : `(${(recognizedStudent.confidence * 100).toFixed(0)}%)`}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(15, 23, 42, 0.95)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: 'var(--space-xl)',
+                    zIndex: 10
+                  }} className="animate-fade-in">
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      background: recognizedStudent.alreadyMarked ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                      border: recognizedStudent.alreadyMarked ? '3px solid #F59E0B' : '3px solid var(--success)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: recognizedStudent.alreadyMarked ? '#F59E0B' : 'var(--success)',
+                      marginBottom: 'var(--space-lg)',
+                      boxShadow: recognizedStudent.alreadyMarked ? '0 0 30px rgba(245, 158, 11, 0.3)' : '0 0 30px rgba(16, 185, 129, 0.3)'
+                    }}>
+                      {recognizedStudent.alreadyMarked ? <AlertCircle size={48} /> : <CheckCircle2 size={48} />}
                     </div>
-                  </>
+
+                    <h2 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, textAlign: 'center', margin: '0 0 8px 0', color: 'white' }}>
+                      {recognizedStudent.name}
+                    </h2>
+                    
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-base)', margin: '0 0 24px 0', textAlign: 'center' }}>
+                      Roll #{recognizedStudent.rollNo} · Class {classes.find(c => c.id === selectedClass)?.name}-{classes.find(c => c.id === selectedClass)?.section}
+                    </p>
+
+                    <div style={{
+                      padding: '8px 16px',
+                      background: recognizedStudent.alreadyMarked ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                      border: recognizedStudent.alreadyMarked ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(16, 185, 129, 0.2)',
+                      borderRadius: 'var(--radius-full)',
+                      color: recognizedStudent.alreadyMarked ? '#F59E0B' : 'var(--success-light)',
+                      fontWeight: 600,
+                      fontSize: 'var(--font-size-sm)',
+                      marginBottom: '32px'
+                    }}>
+                      {recognizedStudent.alreadyMarked ? 'Already Checked In Today' : `Checked In Successfully (${(recognizedStudent.confidence * 100).toFixed(0)}% Match)`}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-md)' }}>
+                      <button className="btn btn-primary" onClick={handleNextStudent} style={{ padding: '10px 24px', fontWeight: 600 }}>
+                        Next Student Check-In
+                      </button>
+                      <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>
+                        Automatically resetting in {kioskCountdown}s...
+                      </span>
+                    </div>
+                  </div>
                 )}
               </>
             ) : (

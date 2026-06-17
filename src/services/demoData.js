@@ -129,6 +129,7 @@ const generateStudents = () => {
         enrollmentDate: '2026-04-01',
         faceRegistered: Math.random() > 0.15,
         avatar: `${firstName[0]}${lastName[0]}`,
+        feesPaid: [0, 200, 400, 600, 800, 1000][Math.floor(Math.random() * 6)],
       });
       studentIndex++;
     }
@@ -367,7 +368,7 @@ export const demoMealData = (() => {
       estimatedQuantityKg: Math.round(present * 0.15 * 10) / 10,
       actualQuantityKg: Math.round(present * 0.15 * 10) / 10 + (Math.random() * 2 - 1),
       wastageKg: Math.round(Math.random() * 3 * 10) / 10,
-      costPerMeal: 12.5,
+      costPerMeal: 34.5,
     });
   }
   return meals;
