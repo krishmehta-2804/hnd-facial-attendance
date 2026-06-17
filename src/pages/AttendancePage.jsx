@@ -150,27 +150,8 @@ const AttendancePage = () => {
             new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
           ]);
         } catch (e) {
-          console.warn('[AttendancePage] Models could not load — falling back to demo mode:', e.message);
+          console.warn('[AttendancePage] Models could not load:', e.message);
         }
-      }
-
-      // Fetch stored face descriptors from IndexedDB
-      const storedDescriptors = await offlineDB.faceDescriptors.toArray();
-      const currentClassStudentIds = new Set(classStudents.map(s => s.id));
-      const classDescriptors = storedDescriptors.filter(d => currentClassStudentIds.has(d.studentId));
-
-      if (areModelsLoaded() && classDescriptors.length > 0) {
-        setIsDemoScanner(false);
-        const formatted = classDescriptors.map(d => ({
-          label: d.studentId,
-          descriptors: [new Float32Array(d.descriptor)]
-        }));
-        const matcher = createMatcher(formatted, 0.6);
-        startScanningSimulation(matcher);
-      } else {
-        // Fallback to simulation mode if no faces registered OR models failed
-        setIsDemoScanner(true);
-        startScanningSimulation(null);
       }
     } catch (err) {
       console.error('Error starting camera:', err);
@@ -178,12 +159,37 @@ const AttendancePage = () => {
     }
   };
 
-  // Bind video stream once the video element has mounted in the DOM
+  // Bind video stream and launch face detection loop reactively after mount/render
   useEffect(() => {
     if (isCameraActive && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current;
+      
+      const setupScanner = async () => {
+        try {
+          const storedDescriptors = await offlineDB.faceDescriptors.toArray();
+          const currentClassStudentIds = new Set(classStudents.map(s => s.id));
+          const classDescriptors = storedDescriptors.filter(d => currentClassStudentIds.has(d.studentId));
+
+          if (areModelsLoaded() && classDescriptors.length > 0) {
+            setIsDemoScanner(false);
+            const formatted = classDescriptors.map(d => ({
+              label: d.studentId,
+              descriptors: [new Float32Array(d.descriptor)]
+            }));
+            const matcher = createMatcher(formatted, 0.65);
+            startScanningSimulation(matcher);
+          } else {
+            setIsDemoScanner(true);
+            startScanningSimulation(null);
+          }
+        } catch (err) {
+          console.error('[AttendancePage] Failed to fetch descriptors from IndexedDB:', err);
+        }
+      };
+      
+      setupScanner();
     }
-  }, [isCameraActive]);
+  }, [isCameraActive, selectedClass]);
 
   // Stop Camera
   const stopCamera = () => {
