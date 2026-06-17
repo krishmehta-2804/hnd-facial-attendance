@@ -52,7 +52,7 @@ export const detectFace = async (videoElement) => {
 
   try {
     const options = new faceapi.TinyFaceDetectorOptions({
-      inputSize: 320,
+      inputSize: 224,
       scoreThreshold: 0.15,
     });
     return await faceapi
@@ -72,7 +72,7 @@ export const detectAllFaces = async (videoElement) => {
 
   try {
     const options = new faceapi.TinyFaceDetectorOptions({
-      inputSize: 320,
+      inputSize: 224,
       scoreThreshold: 0.15,
     });
     return await faceapi

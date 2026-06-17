@@ -21,6 +21,7 @@ const FaceRegisterPage = () => {
   const [modelsLoading, setModelsLoading] = useState(true);
 
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const animationFrameRef = useRef(null);
   const descriptorsRef = useRef([]);
@@ -94,6 +95,12 @@ const FaceRegisterPage = () => {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    if (canvasRef.current) {
+      try {
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      } catch (e) {}
+    }
     setIsCameraActive(false);
     setIsCapturing(false);
   };
@@ -123,10 +130,33 @@ const FaceRegisterPage = () => {
       try {
         const detection = await detectFace(videoRef.current);
         
+        // Setup canvas context
+        const canvas = canvasRef.current;
+        let ctx = null;
+        if (canvas) {
+          ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
         if (detection && detection.descriptor) {
           descriptorsRef.current.push(detection.descriptor);
           const currentCount = descriptorsRef.current.length;
           
+          // Draw bounding box
+          if (canvas && ctx && detection.detection && detection.detection.box) {
+            const box = detection.detection.box;
+            ctx.strokeStyle = '#10B981';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(box.x, box.y, box.width, box.height);
+            
+            ctx.fillStyle = '#10B981';
+            ctx.fillRect(box.x, box.y - 25, Math.max(160, box.width), 25);
+            
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 12px Inter, sans-serif';
+            ctx.fillText(`CAPTURED SLOT ${currentCount}/5`, box.x + 8, box.y - 8);
+          }
+
           setCaptureProgress(currentCount);
           setCapturedImages((prev) => [
             ...prev,
@@ -157,15 +187,33 @@ const FaceRegisterPage = () => {
               await refreshFaceRegistrations();
             }
 
+            // Clear canvas
+            if (canvas && ctx) {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
             setRegisterStatus('success');
             stopCamera();
             return;
+          }
+        } else {
+          // If a face is detected but we haven't successfully processed a descriptor yet,
+          // or if no face is detected, we clear the canvas.
+          if (canvas && ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
           }
         }
       } catch (err) {
         console.error('Error during live scan:', err);
         setErrorMessage(`Scan Error: ${err.message || err.toString()}`);
         setRegisterStatus('error');
+        // Clear canvas
+        const canvas = canvasRef.current;
+        if (canvas) {
+          try {
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+          } catch (e) {}
+        }
         stopCamera();
         return;
       }
@@ -205,6 +253,7 @@ const FaceRegisterPage = () => {
               ) : isCameraActive ? (
                 <>
                   <video ref={videoRef} autoPlay playsInline muted width="640" height="480" />
+                  <canvas ref={canvasRef} width="640" height="480" />
                   {isCapturing && (
                     <div className="face-capture-guide animate-pulse" />
                   )}

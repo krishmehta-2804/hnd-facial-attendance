@@ -2,6 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      window.addEventListener('error', function(event) {
+        alert('JS Runtime Error:\n' + event.message + '\n\nFile: ' + event.filename + '\nLine: ' + event.lineno);
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        alert('Promise Rejection:\n' + (event.reason ? (event.reason.message || event.reason) : 'Unknown reason'));
+      });
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Automated, tablet-optimized facial recognition attendance system for HND schools in Haryana. Built-in analytics, mid-day meal planning, and automated reporting." />
