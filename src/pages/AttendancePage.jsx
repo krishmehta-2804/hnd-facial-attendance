@@ -47,6 +47,7 @@ const AttendancePage = () => {
   const isEditingLocked = currentUser?.role === 'teacher' && selectedDate !== todayStr;
 
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const animationFrameRef = useRef(null);
   const scanIntervalRef = useRef(null);
@@ -195,6 +196,12 @@ const AttendancePage = () => {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    if (canvasRef.current) {
+      try {
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      } catch (e) {}
+    }
     setIsCameraActive(false);
     setScanStatus('idle');
     setRecognizedStudent(null);
@@ -303,8 +310,51 @@ const AttendancePage = () => {
 
         try {
           const detection = await detectFace(videoRef.current);
+          
+          // Clear canvas on each loop run
+          const canvas = canvasRef.current;
+          let ctx = null;
+          if (canvas) {
+            ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+
           if (detection && detection.descriptor) {
             const match = matchFace(detection.descriptor, matcher);
+            
+            // Draw real-time diagnostic bounding box
+            if (canvas && ctx) {
+              const box = detection.detection.box;
+              
+              if (match && match.label !== 'unknown') {
+                // Match Found: Draw Green Box with Student Name Banner
+                ctx.strokeStyle = '#10B981';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(box.x, box.y, box.width, box.height);
+                
+                ctx.fillStyle = '#10B981';
+                ctx.fillRect(box.x, box.y - 25, Math.max(140, box.width), 25);
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                const student = classStudentsRef.current.find(s => s.id === match.label);
+                const nameLabel = student ? student.name : 'Matched';
+                ctx.fillText(nameLabel.toUpperCase(), box.x + 8, box.y - 8);
+              } else {
+                // Match Failed: Draw Red Box with UNKNOWN FACE Banner
+                ctx.strokeStyle = '#EF4444';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(box.x, box.y, box.width, box.height);
+                
+                ctx.fillStyle = '#EF4444';
+                ctx.fillRect(box.x, box.y - 25, Math.max(140, box.width), 25);
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.fillText('UNKNOWN FACE', box.x + 8, box.y - 8);
+              }
+            }
+
             if (match && match.label !== 'unknown') {
               const studentId = match.label;
               const student = classStudentsRef.current.find(s => s.id === studentId);
@@ -329,6 +379,12 @@ const AttendancePage = () => {
                 if (videoRef.current) {
                   try { videoRef.current.pause(); } catch (e) {}
                 }
+                
+                // Clear canvas immediately on success view
+                if (canvas && ctx) {
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+                
                 setKioskCountdown(2);
               }
             }
@@ -541,12 +597,13 @@ const AttendancePage = () => {
                 <p style={{ fontSize: 'var(--font-size-sm)', marginTop: '4px', color: 'var(--text-tertiary)' }}>Please wait while neural networks initialize.</p>
               </div>
             ) : isCameraActive ? (
-              <>
-                <video ref={videoRef} autoPlay playsInline muted width="640" height="480" />
+              <div style={{ position: 'relative', width: '640px', height: '480px', margin: '0 auto', overflow: 'hidden', borderRadius: 'var(--radius-lg)' }}>
+                <video ref={videoRef} autoPlay playsInline muted width="640" height="480" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                <canvas ref={canvasRef} width="640" height="480" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 5, pointerEvents: 'none' }} />
                 {scanStatus === 'scanning' && (
                   <>
-                    <div className="face-capture-guide animate-pulse" />
-                    <div className="face-capture-status detecting">
+                    <div className="face-capture-guide animate-pulse" style={{ zIndex: 6 }} />
+                    <div className="face-capture-status detecting" style={{ zIndex: 7 }}>
                       <Scan className="animate-spin" size={16} />
                       {isDemoScanner ? 'Simulating Kiosk Check-In...' : 'Kiosk Check-In Active (Live)...'}
                     </div>
@@ -617,7 +674,7 @@ const AttendancePage = () => {
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)', padding: 'var(--space-2xl)' }}>
                 <Camera size={64} style={{ marginBottom: 'var(--space-md)', opacity: 0.3 }} />
