@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { GraduationCap, Mail, Lock, Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
-import { demoUsers } from '../services/demoData';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -22,21 +21,6 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async (user) => {
-    setEmail(user.email);
-    setPassword(user.password);
-    setError('');
-    setLoading(true);
-    try {
-      await login(user.email, user.password);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
@@ -123,27 +107,6 @@ const LoginPage = () => {
               )}
             </button>
           </form>
-
-          <div className="login-divider">
-            <span>Quick Demo Login</span>
-          </div>
-
-          <div className="demo-logins">
-            {demoUsers.map((user) => (
-              <button
-                key={user.id}
-                className="demo-login-btn"
-                onClick={() => handleDemoLogin(user)}
-                disabled={loading}
-              >
-                <div className="demo-avatar">{user.avatar}</div>
-                <div className="demo-info">
-                  <div className="demo-name">{user.name}</div>
-                  <div className="demo-role">{user.role}</div>
-                </div>
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="login-footer">

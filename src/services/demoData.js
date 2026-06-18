@@ -4310,10 +4310,8 @@ const generateAttendanceRecords = () => {
       let status;
 
       if (dayOffset === 0) {
-        // Today: slightly higher absence for realism
-        if (rand < 0.88) status = ATTENDANCE_STATUS.PRESENT;
-        else if (rand < 0.96) status = ATTENDANCE_STATUS.ABSENT;
-        else status = ATTENDANCE_STATUS.LATE;
+        // Today: initially mark all students as absent
+        status = ATTENDANCE_STATUS.ABSENT;
       } else {
         // Historical
         if (rand < 0.91) status = ATTENDANCE_STATUS.PRESENT;
@@ -4335,7 +4333,7 @@ const generateAttendanceRecords = () => {
         schoolId: 'school-001',
         date: dateStr,
         status,
-        method: Math.random() > 0.4 ? 'facial' : 'manual',
+        method: status === ATTENDANCE_STATUS.ABSENT ? 'manual' : (Math.random() > 0.4 ? 'facial' : 'manual'),
         confidence: status !== ATTENDANCE_STATUS.ABSENT ? (0.78 + Math.random() * 0.21).toFixed(2) : null,
         timestamp: timestamp.toISOString(),
         markedBy: 'teacher-ritika',
