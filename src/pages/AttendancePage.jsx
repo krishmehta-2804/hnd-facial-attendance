@@ -914,8 +914,25 @@ const AttendancePage = () => {
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>
-                      Roll #{student.rollNo}
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                      <span>Roll #{student.rollNo}</span>
+                      {status && (() => {
+                        const record = records.find(r => r.studentId === student.id && r.date === selectedDate);
+                        const method = record?.method || 'manual';
+                        return (
+                          <span style={{
+                            fontSize: '9px',
+                            padding: '1px 5px',
+                            background: method === 'facial' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(100, 116, 139, 0.15)',
+                            color: method === 'facial' ? '#A78BFA' : '#94A3B8',
+                            borderRadius: '4px',
+                            fontWeight: '600',
+                            border: method === 'facial' ? '1px solid rgba(139, 92, 246, 0.2)' : '1px solid rgba(100, 116, 139, 0.2)',
+                          }}>
+                            {method === 'facial' ? '📷 Facial' : '✍️ Manual'}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                   <div className="attendance-toggle">
