@@ -303,7 +303,7 @@ const AttendancePage = () => {
     if (videoRef.current) {
       try { videoRef.current.pause(); } catch (e) {}
     }
-    setKioskCountdown(2);
+    setKioskCountdown(5);
   };
 
   useEffect(() => {
@@ -431,7 +431,7 @@ const AttendancePage = () => {
                   ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
                 
-                setKioskCountdown(2);
+                setKioskCountdown(5);
               }
             }
           } else {
