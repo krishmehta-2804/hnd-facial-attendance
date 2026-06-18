@@ -130,7 +130,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-14",
-    "name": "Parent of Roh",
+    "name": "Parent of Rohima Bashyal",
     "email": "parent_cscbv-hr4237-25-14@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -143,7 +143,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9599846877",
-    "name": "Parent of Roh",
+    "name": "Parent of Rohima Bashyal",
     "email": "9599846877@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -156,7 +156,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-15",
-    "name": "Parent of R",
+    "name": "Parent of Rimi Khatun",
     "email": "parent_cscbv-hr4237-25-15@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -169,7 +169,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9749523260",
-    "name": "Parent of R",
+    "name": "Parent of Rimi Khatun",
     "email": "9749523260@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -182,7 +182,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-17",
-    "name": "Parent of R",
+    "name": "Parent of Ritika Kumari",
     "email": "parent_cscbv-hr4237-25-17@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -195,7 +195,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9319644156",
-    "name": "Parent of R",
+    "name": "Parent of Ritika Kumari",
     "email": "9319644156@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -260,7 +260,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-26-127",
-    "name": "Parent of Kart",
+    "name": "Parent of Kartik",
     "email": "parent_cscbv-hr4237-26-127@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -273,7 +273,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-8860479329",
-    "name": "Parent of Kart",
+    "name": "Parent of Kartik",
     "email": "8860479329@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -286,7 +286,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-8",
-    "name": "Parent of Joyd",
+    "name": "Parent of Joydip Das",
     "email": "parent_cscbv-hr4237-25-8@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -299,7 +299,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9667980959",
-    "name": "Parent of Joyd",
+    "name": "Parent of Joydip Das",
     "email": "9667980959@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -312,7 +312,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-7",
-    "name": "Parent of Har",
+    "name": "Parent of Haritosh Hazra",
     "email": "parent_cscbv-hr4237-25-7@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -325,7 +325,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9971029152",
-    "name": "Parent of Har",
+    "name": "Parent of Haritosh Hazra",
     "email": "9971029152@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -364,7 +364,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-26",
-    "name": "Parent of Sab",
+    "name": "Parent of Sabik",
     "email": "parent_cscbv-hr4237-25-26@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -377,7 +377,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9718549189",
-    "name": "Parent of Sab",
+    "name": "Parent of Sabik",
     "email": "9718549189@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -416,7 +416,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-16",
-    "name": "Parent of Rana Ru",
+    "name": "Parent of Rana Ruidas",
     "email": "parent_cscbv-hr4237-25-16@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -429,7 +429,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9871616902",
-    "name": "Parent of Rana Ru",
+    "name": "Parent of Rana Ruidas",
     "email": "9871616902@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -442,7 +442,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-11",
-    "name": "Parent of Mohammod Sel",
+    "name": "Parent of Mohammod Selim Reja",
     "email": "parent_cscbv-hr4237-25-11@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -455,7 +455,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9625089953",
-    "name": "Parent of Mohammod Sel",
+    "name": "Parent of Mohammod Selim Reja",
     "email": "9625089953@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1131,7 +1131,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-94",
-    "name": "Parent of Priyank Chauhan",
+    "name": "Parent of Priyank  Chauhan",
     "email": "parent_cscbv-hr4237-25-94@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1144,7 +1144,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9971239418",
-    "name": "Parent of Priyank Chauhan",
+    "name": "Parent of Priyank  Chauhan",
     "email": "9971239418@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1209,7 +1209,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-111",
-    "name": "Parent of Roshan Kumar Singh",
+    "name": "Parent of Roshan  Kumar Singh",
     "email": "parent_cscbv-hr4237-25-111@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1222,7 +1222,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9892657221",
-    "name": "Parent of Roshan Kumar Singh",
+    "name": "Parent of Roshan  Kumar Singh",
     "email": "9892657221@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1326,7 +1326,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-108",
-    "name": "Parent of Sangita Jana",
+    "name": "Parent of Sangita  Jana",
     "email": "parent_cscbv-hr4237-25-108@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1339,7 +1339,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-7585839355",
-    "name": "Parent of Sangita Jana",
+    "name": "Parent of Sangita  Jana",
     "email": "7585839355@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1482,7 +1482,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-85",
-    "name": "Parent of Pihu Das",
+    "name": "Parent of Pihu   Das",
     "email": "parent_cscbv-hr4237-25-85@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1495,7 +1495,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9310148253",
-    "name": "Parent of Pihu Das",
+    "name": "Parent of Pihu   Das",
     "email": "9310148253@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1508,7 +1508,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-57",
-    "name": "Parent of Ashwani",
+    "name": "Parent of Ashwani Verma",
     "email": "parent_cscbv-hr4237-25-57@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1638,7 +1638,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-49",
-    "name": "Parent of Najiya Par",
+    "name": "Parent of Najiya Parveen",
     "email": "parent_cscbv-hr4237-25-49@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1651,7 +1651,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9871505241",
-    "name": "Parent of Najiya Par",
+    "name": "Parent of Najiya Parveen",
     "email": "9871505241@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1768,7 +1768,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-42",
-    "name": "Parent of Shi",
+    "name": "Parent of Shivam",
     "email": "parent_cscbv-hr4237-25-42@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1781,7 +1781,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9650025890",
-    "name": "Parent of Shi",
+    "name": "Parent of Shivam",
     "email": "9650025890@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -1794,7 +1794,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-30",
-    "name": "Parent of Bha",
+    "name": "Parent of Bhaves Das",
     "email": "parent_cscbv-hr4237-25-30@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -2015,7 +2015,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-53",
-    "name": "Parent of Anu Par",
+    "name": "Parent of Anu Parvin",
     "email": "parent_cscbv-hr4237-25-53@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -2028,7 +2028,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9205744689",
-    "name": "Parent of Anu Par",
+    "name": "Parent of Anu Parvin",
     "email": "9205744689@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -2145,7 +2145,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-92",
-    "name": "Parent of Shi",
+    "name": "Parent of Shivam Kumar",
     "email": "parent_cscbv-hr4237-25-92@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -2158,7 +2158,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-8882156576",
-    "name": "Parent of Shi",
+    "name": "Parent of Shivam Kumar",
     "email": "8882156576@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -2236,7 +2236,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-adm-cscbv-hr4237-25-114",
-    "name": "Parent of Eshant Kumar Mandal",
+    "name": "Parent of Eshant Kumar  Mandal",
     "email": "parent_cscbv-hr4237-25-114@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -2249,7 +2249,7 @@ export const demoUsers = [
   },
   {
     "id": "parent-phone-9334954286",
-    "name": "Parent of Eshant Kumar Mandal",
+    "name": "Parent of Eshant Kumar  Mandal",
     "email": "9334954286@hnd.edu",
     "password": "parent123",
     "role": "parent",
@@ -2505,7 +2505,7 @@ export const demoStudents = [
   {
     "id": "student-cscbv-hr4237-25-14",
     "admissionNo": "CSCBV-HR4237-25-14",
-    "name": "Roh",
+    "name": "Rohima Bashyal",
     "rollNo": 1,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2516,15 +2516,15 @@ export const demoStudents = [
     "parentPhone": "9599846877",
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
-    "avatar": "R",
-    "feesPaid": 0,
+    "avatar": "RB",
+    "feesPaid": 600,
     "fatherName": "Sonu Boshal",
     "motherName": "Basanti Boshal"
   },
   {
     "id": "student-cscbv-hr4237-25-15",
     "admissionNo": "CSCBV-HR4237-25-15",
-    "name": "R",
+    "name": "Rimi Khatun",
     "rollNo": 2,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2535,15 +2535,15 @@ export const demoStudents = [
     "parentPhone": "9749523260",
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
-    "avatar": "R",
-    "feesPaid": 0,
+    "avatar": "RK",
+    "feesPaid": 600,
     "fatherName": "Aliul Sk",
     "motherName": "Rina Khatun"
   },
   {
     "id": "student-cscbv-hr4237-25-17",
     "admissionNo": "CSCBV-HR4237-25-17",
-    "name": "R",
+    "name": "Ritika Kumari",
     "rollNo": 3,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2554,8 +2554,8 @@ export const demoStudents = [
     "parentPhone": "9319644156",
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
-    "avatar": "R",
-    "feesPaid": 0,
+    "avatar": "RK",
+    "feesPaid": 600,
     "fatherName": "Rituraj Mandal",
     "motherName": "Soni Kumari"
   },
@@ -2574,7 +2574,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "P",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Jiledar",
     "motherName": "Sunita Verma"
   },
@@ -2593,14 +2593,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mahadev Mukhiya",
     "motherName": "Pinki Devi"
   },
   {
     "id": "student-cscbv-hr4237-26-127",
     "admissionNo": "CSCBV-HR4237-26-127",
-    "name": "Kart",
+    "name": "Kartik",
     "rollNo": 6,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2612,14 +2612,14 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "K",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Raj Kumar",
     "motherName": "Sonam"
   },
   {
     "id": "student-cscbv-hr4237-25-8",
     "admissionNo": "CSCBV-HR4237-25-8",
-    "name": "Joyd",
+    "name": "Joydip Das",
     "rollNo": 7,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2630,15 +2630,15 @@ export const demoStudents = [
     "parentPhone": "9667980959",
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
-    "avatar": "J",
-    "feesPaid": 0,
+    "avatar": "JD",
+    "feesPaid": 600,
     "fatherName": "Jugal Das",
     "motherName": "Sampati Das"
   },
   {
     "id": "student-cscbv-hr4237-25-7",
     "admissionNo": "CSCBV-HR4237-25-7",
-    "name": "Har",
+    "name": "Haritosh Hazra",
     "rollNo": 8,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2649,8 +2649,8 @@ export const demoStudents = [
     "parentPhone": "9971029152",
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
-    "avatar": "H",
-    "feesPaid": 0,
+    "avatar": "HH",
+    "feesPaid": 600,
     "fatherName": "Gautam Hazra",
     "motherName": "Madhumita Hazra"
   },
@@ -2669,14 +2669,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AA",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mastak Alam",
     "motherName": "Arjan Khatun"
   },
   {
     "id": "student-cscbv-hr4237-25-26",
     "admissionNo": "CSCBV-HR4237-25-26",
-    "name": "Sab",
+    "name": "Sabik",
     "rollNo": 10,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2688,7 +2688,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "S",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Jasim",
     "motherName": "Khusbu Khatoon"
   },
@@ -2707,14 +2707,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ravi Kumar",
     "motherName": "Purnima Devi"
   },
   {
     "id": "student-cscbv-hr4237-25-16",
     "admissionNo": "CSCBV-HR4237-25-16",
-    "name": "Rana Ru",
+    "name": "Rana Ruidas",
     "rollNo": 12,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2726,14 +2726,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RR",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ranjit Ruidas",
     "motherName": "Silpi Ruidas"
   },
   {
     "id": "student-cscbv-hr4237-25-11",
     "admissionNo": "CSCBV-HR4237-25-11",
-    "name": "Mohammod Sel",
+    "name": "Mohammod Selim Reja",
     "rollNo": 13,
     "classId": "class-1a",
     "className": "Class I-A",
@@ -2745,7 +2745,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "MS",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Deluyar Hossain",
     "motherName": "Laila Khatun"
   },
@@ -2764,7 +2764,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ramu Ram",
     "motherName": "Laxmi Devi"
   },
@@ -2783,7 +2783,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Biswanath Das",
     "motherName": "Anjali Das"
   },
@@ -2802,7 +2802,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Arsat Ali",
     "motherName": "Sahnaj Khatun"
   },
@@ -2821,7 +2821,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Khokhan Das",
     "motherName": "Asha Das"
   },
@@ -2840,7 +2840,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AH",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Nur Islam",
     "motherName": "Nargis"
   },
@@ -2859,7 +2859,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "TB",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Sonu Bashyal",
     "motherName": "Basanti Boshal"
   },
@@ -2878,7 +2878,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "TD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mr. Jugal Das",
     "motherName": "Samapti Das"
   },
@@ -2897,7 +2897,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "A",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Satish Chandra",
     "motherName": "Rama Devi"
   },
@@ -2916,7 +2916,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Rahman Shekh",
     "motherName": "Sabiran Khatun"
   },
@@ -2935,9 +2935,9 @@ export const demoStudents = [
     "enrollmentDate": "22-07-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 0,
-    "fatherName": "Mrs. Silpi Das",
-    "motherName": "Not Provided"
+    "feesPaid": 600,
+    "fatherName": "Not Provided",
+    "motherName": "Mrs. Silpi Das"
   },
   {
     "id": "student-cscbv-hr4237-25-82",
@@ -2954,7 +2954,7 @@ export const demoStudents = [
     "enrollmentDate": "07-07-2025",
     "faceRegistered": false,
     "avatar": "PK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Saroj Ram",
     "motherName": "Meera"
   },
@@ -2973,9 +2973,9 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SH",
-    "feesPaid": 0,
-    "fatherName": "Manju Khatun",
-    "motherName": "Not Provided"
+    "feesPaid": 600,
+    "fatherName": "Not Provided",
+    "motherName": "Manju Khatun"
   },
   {
     "id": "student-cscbv-hr4237-25-65",
@@ -2992,7 +2992,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RS",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Subhankar Saha",
     "motherName": "Rimpa Saha Biswas"
   },
@@ -3011,7 +3011,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mithun Das",
     "motherName": "Sumati Das"
   },
@@ -3030,7 +3030,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Rituraj Mandal",
     "motherName": "Soni Kumari"
   },
@@ -3049,7 +3049,7 @@ export const demoStudents = [
     "enrollmentDate": "25-09-2025",
     "faceRegistered": false,
     "avatar": "P",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Vishnu",
     "motherName": "Seema"
   },
@@ -3068,7 +3068,7 @@ export const demoStudents = [
     "enrollmentDate": "25-09-2025",
     "faceRegistered": false,
     "avatar": "DC",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Dharmender",
     "motherName": "Geeta"
   },
@@ -3087,7 +3087,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Krishn Kumar",
     "motherName": "Kamla Devi"
   },
@@ -3106,7 +3106,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "TD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Pritam Das",
     "motherName": "Bulu Sarkar"
   },
@@ -3125,7 +3125,7 @@ export const demoStudents = [
     "enrollmentDate": "22-07-2024",
     "faceRegistered": false,
     "avatar": "SD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Raju Das",
     "motherName": "Shrabani Mondal"
   },
@@ -3144,7 +3144,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "BD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ranjit Das",
     "motherName": "Sagari Das"
   },
@@ -3163,7 +3163,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SS",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Dipankar Saha",
     "motherName": "Susmita Saha"
   },
@@ -3182,7 +3182,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "MR",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ajrul Sk",
     "motherName": "Taslima Bibi"
   },
@@ -3201,7 +3201,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "PK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Shatrudhan Yadav",
     "motherName": "Kajal Yadav"
   },
@@ -3220,7 +3220,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "BD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Bhim Das",
     "motherName": "Purnima Das"
   },
@@ -3239,7 +3239,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "BD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Pratipa Das",
     "motherName": "Champa Das"
   },
@@ -3258,14 +3258,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RA",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Jelahar Hossain",
     "motherName": "Sima Khatun"
   },
   {
     "id": "student-cscbv-hr4237-25-94",
     "admissionNo": "CSCBV-HR4237-25-94",
-    "name": "Priyank Chauhan",
+    "name": "Priyank  Chauhan",
     "rollNo": 41,
     "classId": "class-3a",
     "className": "Class III-A",
@@ -3277,7 +3277,7 @@ export const demoStudents = [
     "enrollmentDate": "04-04-2025",
     "faceRegistered": false,
     "avatar": "PC",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Narender Kumar",
     "motherName": "Neha"
   },
@@ -3296,7 +3296,7 @@ export const demoStudents = [
     "enrollmentDate": "04-04-2025",
     "faceRegistered": false,
     "avatar": "JB",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ashok",
     "motherName": "Meenakshi"
   },
@@ -3315,14 +3315,14 @@ export const demoStudents = [
     "enrollmentDate": "04-04-2025",
     "faceRegistered": false,
     "avatar": "D",
-    "feesPaid": 0,
-    "fatherName": "Rupesh",
-    "motherName": "Kumar"
+    "feesPaid": 600,
+    "fatherName": "Rupesh  Kumar",
+    "motherName": "Premlata"
   },
   {
     "id": "student-cscbv-hr4237-25-111",
     "admissionNo": "CSCBV-HR4237-25-111",
-    "name": "Roshan Kumar Singh",
+    "name": "Roshan  Kumar Singh",
     "rollNo": 44,
     "classId": "class-3a",
     "className": "Class III-A",
@@ -3334,7 +3334,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ram Gobind Singh",
     "motherName": "Rani Devi"
   },
@@ -3353,7 +3353,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ramu Ram",
     "motherName": "Laxmi Devi"
   },
@@ -3372,7 +3372,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "MK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ramu Ram",
     "motherName": "Laxmi Devi"
   },
@@ -3391,9 +3391,9 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 0,
-    "fatherName": "Doch Mohammad",
-    "motherName": "Sekh"
+    "feesPaid": 600,
+    "fatherName": "Doch Mohammad  Sekh",
+    "motherName": "Tohamina  Bibi  Sk"
   },
   {
     "id": "student-cscbv-hr4237-25-119",
@@ -3410,14 +3410,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "FP",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Jasim",
     "motherName": "Khusbu Khatoon"
   },
   {
     "id": "student-cscbv-hr4237-25-108",
     "admissionNo": "CSCBV-HR4237-25-108",
-    "name": "Sangita Jana",
+    "name": "Sangita  Jana",
     "rollNo": 49,
     "classId": "class-4a",
     "className": "Class IV-A",
@@ -3429,9 +3429,9 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SJ",
-    "feesPaid": 0,
-    "fatherName": "Tushar",
-    "motherName": "Jana"
+    "feesPaid": 600,
+    "fatherName": "Tushar  Jana",
+    "motherName": "Sankari Parva Jana"
   },
   {
     "id": "student-cscbv-hr4237-25-54",
@@ -3448,9 +3448,9 @@ export const demoStudents = [
     "enrollmentDate": "01-07-2025",
     "faceRegistered": false,
     "avatar": "AB",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Avijit Barua",
-    "motherName": "Malati"
+    "motherName": "Malati  Barua"
   },
   {
     "id": "student-cscbv-hr4237-25-116",
@@ -3467,9 +3467,9 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RU",
-    "feesPaid": 0,
-    "fatherName": "Murari",
-    "motherName": "Mandal"
+    "feesPaid": 600,
+    "fatherName": "Murari  Mandal",
+    "motherName": "Munni Devi"
   },
   {
     "id": "student-cscbv-hr4237-25-113",
@@ -3486,7 +3486,7 @@ export const demoStudents = [
     "enrollmentDate": "14-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Promod",
     "motherName": "Geeta"
   },
@@ -3505,9 +3505,9 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 0,
-    "fatherName": "Bidhan",
-    "motherName": "Das"
+    "feesPaid": 600,
+    "fatherName": "Bidhan  Das",
+    "motherName": "Anita  Das"
   },
   {
     "id": "student-cscbv-hr4237-26-122",
@@ -3524,14 +3524,14 @@ export const demoStudents = [
     "enrollmentDate": "02-12-2025",
     "faceRegistered": false,
     "avatar": "LK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Antaj Ali",
     "motherName": "Lakki Bibi"
   },
   {
     "id": "student-cscbv-hr4237-25-85",
     "admissionNo": "CSCBV-HR4237-25-85",
-    "name": "Pihu Das",
+    "name": "Pihu   Das",
     "rollNo": 55,
     "classId": "class-5a",
     "className": "Class V-A",
@@ -3543,14 +3543,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "PD",
-    "feesPaid": 0,
-    "fatherName": "Mangal",
-    "motherName": "Das"
+    "feesPaid": 600,
+    "fatherName": "Mangal  Das",
+    "motherName": "Parvati  Das"
   },
   {
     "id": "student-cscbv-hr4237-25-57",
     "admissionNo": "CSCBV-HR4237-25-57",
-    "name": "Ashwani",
+    "name": "Ashwani Verma",
     "rollNo": 56,
     "classId": "class-5a",
     "className": "Class V-A",
@@ -3561,10 +3561,10 @@ export const demoStudents = [
     "parentPhone": "9648437248",
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
-    "avatar": "A",
-    "feesPaid": 0,
+    "avatar": "AV",
+    "feesPaid": 600,
     "fatherName": "Jiledar Verma",
-    "motherName": "Sunita"
+    "motherName": "Sunita  Verma"
   },
   {
     "id": "student-cscbv-hr4237-25-41",
@@ -3581,7 +3581,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RS",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Enamul Alam",
     "motherName": "Asminara Khatun"
   },
@@ -3600,7 +3600,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Lakshman Das",
     "motherName": "Tumpa Roy"
   },
@@ -3619,7 +3619,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "PY",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mr. Shatrudhan Yadav",
     "motherName": "Kajal Yadav"
   },
@@ -3638,7 +3638,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "M",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mr. Krishn Kumar",
     "motherName": "Kamla Devi"
   },
@@ -3657,14 +3657,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "JD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mr. Sukhen Das",
     "motherName": "Lalita Das"
   },
   {
     "id": "student-cscbv-hr4237-25-49",
     "admissionNo": "CSCBV-HR4237-25-49",
-    "name": "Najiya Par",
+    "name": "Najiya Parveen",
     "rollNo": 62,
     "classId": "class-5a",
     "className": "Class V-A",
@@ -3676,7 +3676,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "NP",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mr. Jasim",
     "motherName": "Khusbu Khatoon"
   },
@@ -3695,7 +3695,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Pinku Kumar Singh",
     "motherName": "Vibha Devi"
   },
@@ -3714,7 +3714,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ramjan Sheikh",
     "motherName": "Manuara Bibi Khatun"
   },
@@ -3733,8 +3733,8 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "CR",
-    "feesPaid": 0,
-    "fatherName": "Mr.Basuder Ruidas",
+    "feesPaid": 600,
+    "fatherName": "Mr.basuder Ruidas",
     "motherName": "Champa Rui Das"
   },
   {
@@ -3752,14 +3752,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "NK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mr. Bhogi Sahani",
     "motherName": "Lalita Devi"
   },
   {
     "id": "student-cscbv-hr4237-25-42",
     "admissionNo": "CSCBV-HR4237-25-42",
-    "name": "Shi",
+    "name": "Shivam",
     "rollNo": 67,
     "classId": "class-5a",
     "className": "Class V-A",
@@ -3771,14 +3771,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "S",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Karan Dusad",
     "motherName": "Nandani Devi"
   },
   {
     "id": "student-cscbv-hr4237-25-30",
     "admissionNo": "CSCBV-HR4237-25-30",
-    "name": "Bha",
+    "name": "Bhaves Das",
     "rollNo": 68,
     "classId": "class-5a",
     "className": "Class V-A",
@@ -3789,9 +3789,9 @@ export const demoStudents = [
     "parentPhone": "8851075586",
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
-    "avatar": "B",
-    "feesPaid": 0,
-    "fatherName": "Mr.Hari Das",
+    "avatar": "BD",
+    "feesPaid": 600,
+    "fatherName": "Mr.hari Das",
     "motherName": "Laxmi Das"
   },
   {
@@ -3809,7 +3809,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AH",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Papai Hazra",
     "motherName": "Priyank Hazra"
   },
@@ -3828,7 +3828,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "TM",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Santosh Mandol",
     "motherName": "Sanchita Mandol"
   },
@@ -3847,7 +3847,7 @@ export const demoStudents = [
     "enrollmentDate": "24-11-2025",
     "faceRegistered": false,
     "avatar": "SK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Samraj Shaikh",
     "motherName": "Not Provided"
   },
@@ -3866,7 +3866,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "KK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Vijendra Pal",
     "motherName": "Anita Devi"
   },
@@ -3885,7 +3885,7 @@ export const demoStudents = [
     "enrollmentDate": "29-09-2025",
     "faceRegistered": false,
     "avatar": "AH",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Arujan Sharma",
     "motherName": "Chandni Sharma"
   },
@@ -3904,7 +3904,7 @@ export const demoStudents = [
     "enrollmentDate": "07-04-2025",
     "faceRegistered": false,
     "avatar": "SD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Biswajit Das",
     "motherName": "Anu Shree Das"
   },
@@ -3923,7 +3923,7 @@ export const demoStudents = [
     "enrollmentDate": "03-04-2025",
     "faceRegistered": false,
     "avatar": "SS",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mozaferrar Hossain",
     "motherName": "Dilruba Khatun"
   },
@@ -3942,14 +3942,14 @@ export const demoStudents = [
     "enrollmentDate": "29-09-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Mahadev Mukhiya",
     "motherName": "Pinki Devi"
   },
   {
     "id": "student-cscbv-hr4237-25-53",
     "admissionNo": "CSCBV-HR4237-25-53",
-    "name": "Anu Par",
+    "name": "Anu Parvin",
     "rollNo": 77,
     "classId": "class-5a",
     "className": "Class V-A",
@@ -3961,7 +3961,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AP",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Deerpal Singh",
     "motherName": "Mamta Khatun"
   },
@@ -3980,7 +3980,7 @@ export const demoStudents = [
     "enrollmentDate": "10-07-2025",
     "faceRegistered": false,
     "avatar": "HW",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Shankar",
     "motherName": "Manisha Biswakarma"
   },
@@ -3999,7 +3999,7 @@ export const demoStudents = [
     "enrollmentDate": "05-05-2025",
     "faceRegistered": false,
     "avatar": "SK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Jamsher Sekh",
     "motherName": "Ajmun Nahar Bibi"
   },
@@ -4018,7 +4018,7 @@ export const demoStudents = [
     "enrollmentDate": "24-11-2025",
     "faceRegistered": false,
     "avatar": "SD",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Tapas Das",
     "motherName": "Subhadra Das"
   },
@@ -4037,14 +4037,14 @@ export const demoStudents = [
     "enrollmentDate": "07-04-2025",
     "faceRegistered": false,
     "avatar": "SR",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Lakshman Rui Das",
     "motherName": "Rupali Rui Das"
   },
   {
     "id": "student-cscbv-hr4237-25-92",
     "admissionNo": "CSCBV-HR4237-25-92",
-    "name": "Shi",
+    "name": "Shivam Kumar",
     "rollNo": 82,
     "classId": "class-5a",
     "className": "Class V-A",
@@ -4055,8 +4055,8 @@ export const demoStudents = [
     "parentPhone": "8882156576",
     "enrollmentDate": "07-04-2025",
     "faceRegistered": false,
-    "avatar": "S",
-    "feesPaid": 0,
+    "avatar": "SK",
+    "feesPaid": 600,
     "fatherName": "Ramu Tanti",
     "motherName": "Rinki Devi"
   },
@@ -4075,7 +4075,7 @@ export const demoStudents = [
     "enrollmentDate": "07-04-2025",
     "faceRegistered": false,
     "avatar": "SS",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ajrul Sk",
     "motherName": "Taslima Bibi"
   },
@@ -4094,7 +4094,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RS",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Kharul Sk",
     "motherName": "Munjira Bibi"
   },
@@ -4113,14 +4113,14 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2024",
     "faceRegistered": false,
     "avatar": "AM",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Arun Maity",
     "motherName": "Shrabani Maity"
   },
   {
     "id": "student-cscbv-hr4237-25-114",
     "admissionNo": "CSCBV-HR4237-25-114",
-    "name": "Eshant Kumar Mandal",
+    "name": "Eshant Kumar  Mandal",
     "rollNo": 86,
     "classId": "class-5a",
     "className": "Class V-A",
@@ -4132,7 +4132,7 @@ export const demoStudents = [
     "enrollmentDate": "08-07-2025",
     "faceRegistered": false,
     "avatar": "EK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Jay Kishor Mandal",
     "motherName": "Kavita Devi"
   },
@@ -4151,7 +4151,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "MK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Samaraj Shaikh",
     "motherName": "Pinki Bibi"
   },
@@ -4170,7 +4170,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "AH",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Atish Hazra",
     "motherName": "Rupali Hazra"
   },
@@ -4189,7 +4189,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "BK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Prabhat Kumar",
     "motherName": "Gunja Devi"
   },
@@ -4208,7 +4208,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "SA",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Shakib Ali",
     "motherName": "Lovely Khatun"
   },
@@ -4227,7 +4227,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "AS",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Rejdani Sekh",
     "motherName": "Sarbanu Khatun"
   },
@@ -4246,7 +4246,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "G",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Devendra Kumar",
     "motherName": "Laltesh Kumari"
   },
@@ -4265,7 +4265,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "DK",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Ramu Ram",
     "motherName": "Laxmi Devi"
   },
@@ -4284,7 +4284,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "DB",
-    "feesPaid": 0,
+    "feesPaid": 600,
     "fatherName": "Sanjit Bala",
     "motherName": "Dipa Bala"
   }
