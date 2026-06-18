@@ -283,8 +283,9 @@ const AttendancePage = () => {
 
     const confidence = (0.85 + Math.random() * 0.14).toFixed(2);
     const alreadyMarked = getStudentStatusFromRef(studentId);
+    const isAlreadyCheckedIn = alreadyMarked === ATTENDANCE_STATUS.PRESENT || alreadyMarked === ATTENDANCE_STATUS.LATE;
 
-    if (!alreadyMarked) {
+    if (!isAlreadyCheckedIn) {
       const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', confidence, selectedDateRef.current);
       if (record) {
         setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
@@ -295,7 +296,7 @@ const AttendancePage = () => {
       name: student.name,
       rollNo: student.rollNo,
       confidence,
-      alreadyMarked: !!alreadyMarked
+      alreadyMarked: isAlreadyCheckedIn
     });
     setScanStatus('recognized');
     playSuccessSound();
@@ -402,9 +403,11 @@ const AttendancePage = () => {
               const student = classStudentsRef.current.find(s => s.id === studentId);
               
               if (student) {
-                addLog(`Success check-in: marking ${student.name} present`, 'success');
                 const alreadyMarked = getStudentStatusFromRef(studentId);
-                if (!alreadyMarked) {
+                const isAlreadyCheckedIn = alreadyMarked === ATTENDANCE_STATUS.PRESENT || alreadyMarked === ATTENDANCE_STATUS.LATE;
+
+                addLog(`Success check-in: matching ${student.name}`, 'success');
+                if (!isAlreadyCheckedIn) {
                   const record = markAttendance(studentId, ATTENDANCE_STATUS.PRESENT, 'facial', match.confidence, selectedDateRef.current);
                   if (record) {
                     setRecentMarked((prev) => [record, ...prev.slice(0, 9)]);
@@ -415,7 +418,7 @@ const AttendancePage = () => {
                   name: student.name, 
                   rollNo: student.rollNo,
                   confidence: match.confidence,
-                  alreadyMarked: !!alreadyMarked
+                  alreadyMarked: isAlreadyCheckedIn
                 });
                 setScanStatus('recognized');
                 playSuccessSound();
