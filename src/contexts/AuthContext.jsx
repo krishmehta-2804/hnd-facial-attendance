@@ -31,14 +31,25 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (username, password) => {
+    let cleanUsername = username.trim().toLowerCase();
+    
+    // Automatically map 10-digit phone number or admission number to parent email
+    if (!cleanUsername.includes('@')) {
+      if (/^\d{10}$/.test(cleanUsername)) {
+        cleanUsername = `${cleanUsername}@hnd.edu`;
+      } else if (cleanUsername.startsWith('cscbv')) {
+        cleanUsername = `parent_${cleanUsername}@hnd.edu`;
+      }
+    }
+
     // Demo authentication
     const user = demoUsers.find(
-      (u) => u.email === email && u.password === password
+      (u) => u.email.toLowerCase() === cleanUsername && u.password === password
     );
 
     if (!user) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid username, phone number, or password');
     }
 
     const userData = {

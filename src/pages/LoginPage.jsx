@@ -72,15 +72,15 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">Username, Phone, or Admission No</label>
               <div className="input-with-icon">
                 <Mail size={18} />
                 <input
                   id="email"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="Email, Phone (e.g. 9599846877) or Admission No"
                   required
                 />
               </div>
