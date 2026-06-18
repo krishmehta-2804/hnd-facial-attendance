@@ -2517,7 +2517,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "R",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Sonu Boshal",
     "motherName": "Basanti Boshal"
   },
@@ -2536,7 +2536,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "R",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Aliul Sk",
     "motherName": "Rina Khatun"
   },
@@ -2555,7 +2555,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "R",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Rituraj Mandal",
     "motherName": "Soni Kumari"
   },
@@ -2574,7 +2574,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "P",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Jiledar",
     "motherName": "Sunita Verma"
   },
@@ -2593,7 +2593,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Mahadev Mukhiya",
     "motherName": "Pinki Devi"
   },
@@ -2631,7 +2631,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "J",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Jugal Das",
     "motherName": "Sampati Das"
   },
@@ -2650,7 +2650,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "H",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Gautam Hazra",
     "motherName": "Madhumita Hazra"
   },
@@ -2669,7 +2669,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AA",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Mastak Alam",
     "motherName": "Arjan Khatun"
   },
@@ -2688,7 +2688,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "S",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Jasim",
     "motherName": "Khusbu Khatoon"
   },
@@ -2745,7 +2745,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "MS",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Deluyar Hossain",
     "motherName": "Laila Khatun"
   },
@@ -2764,7 +2764,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Ramu Ram",
     "motherName": "Laxmi Devi"
   },
@@ -2783,7 +2783,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AD",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Biswanath Das",
     "motherName": "Anjali Das"
   },
@@ -2802,7 +2802,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Arsat Ali",
     "motherName": "Sahnaj Khatun"
   },
@@ -2821,7 +2821,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Khokhan Das",
     "motherName": "Asha Das"
   },
@@ -2840,7 +2840,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AH",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Nur Islam",
     "motherName": "Nargis"
   },
@@ -2878,7 +2878,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "TD",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Mr. Jugal Das",
     "motherName": "Samapti Das"
   },
@@ -2897,7 +2897,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "A",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Satish Chandra",
     "motherName": "Rama Devi"
   },
@@ -2916,7 +2916,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Rahman Shekh",
     "motherName": "Sabiran Khatun"
   },
@@ -2935,7 +2935,7 @@ export const demoStudents = [
     "enrollmentDate": "22-07-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Mrs. Silpi Das",
     "motherName": "Not Provided"
   },
@@ -2973,7 +2973,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SH",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Manju Khatun",
     "motherName": "Not Provided"
   },
@@ -2992,7 +2992,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RS",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Subhankar Saha",
     "motherName": "Rimpa Saha Biswas"
   },
@@ -3011,7 +3011,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Mithun Das",
     "motherName": "Sumati Das"
   },
@@ -3030,7 +3030,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Rituraj Mandal",
     "motherName": "Soni Kumari"
   },
@@ -3049,7 +3049,7 @@ export const demoStudents = [
     "enrollmentDate": "25-09-2025",
     "faceRegistered": false,
     "avatar": "P",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Vishnu",
     "motherName": "Seema"
   },
@@ -3068,7 +3068,7 @@ export const demoStudents = [
     "enrollmentDate": "25-09-2025",
     "faceRegistered": false,
     "avatar": "DC",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Dharmender",
     "motherName": "Geeta"
   },
@@ -3106,7 +3106,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "TD",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Pritam Das",
     "motherName": "Bulu Sarkar"
   },
@@ -3125,7 +3125,7 @@ export const demoStudents = [
     "enrollmentDate": "22-07-2024",
     "faceRegistered": false,
     "avatar": "SD",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Raju Das",
     "motherName": "Shrabani Mondal"
   },
@@ -3163,7 +3163,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SS",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Dipankar Saha",
     "motherName": "Susmita Saha"
   },
@@ -3182,7 +3182,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "MR",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Ajrul Sk",
     "motherName": "Taslima Bibi"
   },
@@ -3201,7 +3201,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "PK",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Shatrudhan Yadav",
     "motherName": "Kajal Yadav"
   },
@@ -3220,7 +3220,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "BD",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Bhim Das",
     "motherName": "Purnima Das"
   },
@@ -3239,7 +3239,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "BD",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Pratipa Das",
     "motherName": "Champa Das"
   },
@@ -3277,7 +3277,7 @@ export const demoStudents = [
     "enrollmentDate": "04-04-2025",
     "faceRegistered": false,
     "avatar": "PC",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Narender Kumar",
     "motherName": "Neha"
   },
@@ -3315,7 +3315,7 @@ export const demoStudents = [
     "enrollmentDate": "04-04-2025",
     "faceRegistered": false,
     "avatar": "D",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Rupesh",
     "motherName": "Kumar"
   },
@@ -3334,7 +3334,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Ram Gobind Singh",
     "motherName": "Rani Devi"
   },
@@ -3353,7 +3353,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Ramu Ram",
     "motherName": "Laxmi Devi"
   },
@@ -3372,7 +3372,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "MK",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Ramu Ram",
     "motherName": "Laxmi Devi"
   },
@@ -3391,7 +3391,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Doch Mohammad",
     "motherName": "Sekh"
   },
@@ -3429,7 +3429,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SJ",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Tushar",
     "motherName": "Jana"
   },
@@ -3467,7 +3467,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RU",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Murari",
     "motherName": "Mandal"
   },
@@ -3486,7 +3486,7 @@ export const demoStudents = [
     "enrollmentDate": "14-04-2025",
     "faceRegistered": false,
     "avatar": "RK",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Promod",
     "motherName": "Geeta"
   },
@@ -3505,7 +3505,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RD",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Bidhan",
     "motherName": "Das"
   },
@@ -3524,7 +3524,7 @@ export const demoStudents = [
     "enrollmentDate": "02-12-2025",
     "faceRegistered": false,
     "avatar": "LK",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Antaj Ali",
     "motherName": "Lakki Bibi"
   },
@@ -3543,7 +3543,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "PD",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Mangal",
     "motherName": "Das"
   },
@@ -3562,7 +3562,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "A",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Jiledar Verma",
     "motherName": "Sunita"
   },
@@ -3581,7 +3581,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RS",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Enamul Alam",
     "motherName": "Asminara Khatun"
   },
@@ -3600,7 +3600,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "SD",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Lakshman Das",
     "motherName": "Tumpa Roy"
   },
@@ -3619,7 +3619,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "PY",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Mr. Shatrudhan Yadav",
     "motherName": "Kajal Yadav"
   },
@@ -3657,7 +3657,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "JD",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Mr. Sukhen Das",
     "motherName": "Lalita Das"
   },
@@ -3676,7 +3676,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "NP",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Mr. Jasim",
     "motherName": "Khusbu Khatoon"
   },
@@ -3733,7 +3733,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "CR",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Mr.Basuder Ruidas",
     "motherName": "Champa Rui Das"
   },
@@ -3752,7 +3752,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "NK",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Mr. Bhogi Sahani",
     "motherName": "Lalita Devi"
   },
@@ -3790,7 +3790,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "B",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Mr.Hari Das",
     "motherName": "Laxmi Das"
   },
@@ -3809,7 +3809,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AH",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Papai Hazra",
     "motherName": "Priyank Hazra"
   },
@@ -3828,7 +3828,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "TM",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Santosh Mandol",
     "motherName": "Sanchita Mandol"
   },
@@ -3847,7 +3847,7 @@ export const demoStudents = [
     "enrollmentDate": "24-11-2025",
     "faceRegistered": false,
     "avatar": "SK",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Samraj Shaikh",
     "motherName": "Not Provided"
   },
@@ -3866,7 +3866,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "KK",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Vijendra Pal",
     "motherName": "Anita Devi"
   },
@@ -3885,7 +3885,7 @@ export const demoStudents = [
     "enrollmentDate": "29-09-2025",
     "faceRegistered": false,
     "avatar": "AH",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Arujan Sharma",
     "motherName": "Chandni Sharma"
   },
@@ -3904,7 +3904,7 @@ export const demoStudents = [
     "enrollmentDate": "07-04-2025",
     "faceRegistered": false,
     "avatar": "SD",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Biswajit Das",
     "motherName": "Anu Shree Das"
   },
@@ -3942,7 +3942,7 @@ export const demoStudents = [
     "enrollmentDate": "29-09-2025",
     "faceRegistered": false,
     "avatar": "AK",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Mahadev Mukhiya",
     "motherName": "Pinki Devi"
   },
@@ -3961,7 +3961,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "AP",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Deerpal Singh",
     "motherName": "Mamta Khatun"
   },
@@ -3999,7 +3999,7 @@ export const demoStudents = [
     "enrollmentDate": "05-05-2025",
     "faceRegistered": false,
     "avatar": "SK",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Jamsher Sekh",
     "motherName": "Ajmun Nahar Bibi"
   },
@@ -4018,7 +4018,7 @@ export const demoStudents = [
     "enrollmentDate": "24-11-2025",
     "faceRegistered": false,
     "avatar": "SD",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Tapas Das",
     "motherName": "Subhadra Das"
   },
@@ -4056,7 +4056,7 @@ export const demoStudents = [
     "enrollmentDate": "07-04-2025",
     "faceRegistered": false,
     "avatar": "S",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Ramu Tanti",
     "motherName": "Rinki Devi"
   },
@@ -4075,7 +4075,7 @@ export const demoStudents = [
     "enrollmentDate": "07-04-2025",
     "faceRegistered": false,
     "avatar": "SS",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Ajrul Sk",
     "motherName": "Taslima Bibi"
   },
@@ -4094,7 +4094,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "RS",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Kharul Sk",
     "motherName": "Munjira Bibi"
   },
@@ -4113,7 +4113,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2024",
     "faceRegistered": false,
     "avatar": "AM",
-    "feesPaid": 600,
+    "feesPaid": 0,
     "fatherName": "Arun Maity",
     "motherName": "Shrabani Maity"
   },
@@ -4170,7 +4170,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "AH",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Atish Hazra",
     "motherName": "Rupali Hazra"
   },
@@ -4189,7 +4189,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "BK",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Prabhat Kumar",
     "motherName": "Gunja Devi"
   },
@@ -4208,7 +4208,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "SA",
-    "feesPaid": 1000,
+    "feesPaid": 0,
     "fatherName": "Shakib Ali",
     "motherName": "Lovely Khatun"
   },
@@ -4227,7 +4227,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "AS",
-    "feesPaid": 800,
+    "feesPaid": 0,
     "fatherName": "Rejdani Sekh",
     "motherName": "Sarbanu Khatun"
   },
@@ -4246,7 +4246,7 @@ export const demoStudents = [
     "enrollmentDate": "06-02-2026",
     "faceRegistered": false,
     "avatar": "G",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Devendra Kumar",
     "motherName": "Laltesh Kumari"
   },
@@ -4265,7 +4265,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "DK",
-    "feesPaid": 400,
+    "feesPaid": 0,
     "fatherName": "Ramu Ram",
     "motherName": "Laxmi Devi"
   },
@@ -4284,7 +4284,7 @@ export const demoStudents = [
     "enrollmentDate": "01-04-2025",
     "faceRegistered": false,
     "avatar": "DB",
-    "feesPaid": 200,
+    "feesPaid": 0,
     "fatherName": "Sanjit Bala",
     "motherName": "Dipa Bala"
   }
@@ -4310,8 +4310,10 @@ const generateAttendanceRecords = () => {
       let status;
 
       if (dayOffset === 0) {
-        // Today: initially mark all students as absent
-        status = ATTENDANCE_STATUS.ABSENT;
+        // Today: slightly higher absence for realism
+        if (rand < 0.88) status = ATTENDANCE_STATUS.PRESENT;
+        else if (rand < 0.96) status = ATTENDANCE_STATUS.ABSENT;
+        else status = ATTENDANCE_STATUS.LATE;
       } else {
         // Historical
         if (rand < 0.91) status = ATTENDANCE_STATUS.PRESENT;
@@ -4333,7 +4335,7 @@ const generateAttendanceRecords = () => {
         schoolId: 'school-001',
         date: dateStr,
         status,
-        method: status === ATTENDANCE_STATUS.ABSENT ? 'manual' : (Math.random() > 0.4 ? 'facial' : 'manual'),
+        method: Math.random() > 0.4 ? 'facial' : 'manual',
         confidence: status !== ATTENDANCE_STATUS.ABSENT ? (0.78 + Math.random() * 0.21).toFixed(2) : null,
         timestamp: timestamp.toISOString(),
         markedBy: 'teacher-ritika',
