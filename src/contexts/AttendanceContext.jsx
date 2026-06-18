@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { format, subDays } from 'date-fns';
-import { demoAttendanceRecords, demoStudents, demoClasses } from '../services/demoData';
+import { demoAttendanceRecords, demoStudents, demoClasses, demoUsers } from '../services/demoData';
 import { ATTENDANCE_STATUS } from '../utils/constants';
 import db from '../services/offlineDB';
 
@@ -14,8 +14,9 @@ export const useAttendance = () => {
 
 export const AttendanceProvider = ({ children }) => {
   const [records, setRecords] = useState(demoAttendanceRecords);
-  const [students, setStudents] = useState(demoStudents);
-  const [classes] = useState(demoClasses);
+  const [students, setStudents] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [mealsOrdered, setMealsOrdered] = useState({});
 
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -36,9 +37,45 @@ export const AttendanceProvider = ({ children }) => {
     }
   }, []);
 
-  // Check face registrations on mount
+  // Fetch all students, classes, and teachers from local IndexedDB on mount
   useEffect(() => {
-    refreshFaceRegistrations();
+    const loadFromDB = async () => {
+      try {
+        // 1. Load Students
+        let studentCount = await db.students.count();
+        if (studentCount === 0) {
+          await db.students.bulkAdd(demoStudents);
+        }
+        const loadedStudents = await db.students.toArray();
+        setStudents(loadedStudents);
+
+        // 2. Load Classes
+        let classCount = await db.classes.count();
+        if (classCount === 0) {
+          await db.classes.bulkAdd(demoClasses);
+        }
+        const loadedClasses = await db.classes.toArray();
+        setClasses(loadedClasses);
+
+        // 3. Load Teachers
+        let teacherCount = await db.teachers.count();
+        if (teacherCount === 0) {
+          const staticTeachers = demoUsers.filter(u => u.role === 'teacher');
+          await db.teachers.bulkAdd(staticTeachers);
+        }
+        const loadedTeachers = await db.teachers.toArray();
+        setTeachers(loadedTeachers);
+
+        // Sync face status
+        await refreshFaceRegistrations();
+      } catch (err) {
+        console.error('Failed to load database from IndexedDB, falling back:', err);
+        setStudents(demoStudents);
+        setClasses(demoClasses);
+        setTeachers(demoUsers.filter(u => u.role === 'teacher'));
+      }
+    };
+    loadFromDB();
   }, [refreshFaceRegistrations]);
 
   const todayRecords = useMemo(
@@ -96,7 +133,7 @@ export const AttendanceProvider = ({ children }) => {
         dateLabel: format(date, 'dd MMM'),
         present: dayPresent,
         late: dayLate,
-        absent: dayRecords.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT).length,
+        absent: records.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT && r.date === dateStr).length,
       });
     }
 
@@ -137,6 +174,7 @@ export const AttendanceProvider = ({ children }) => {
         s.id === studentId ? { ...s, feesPaid: (s.feesPaid || 0) + amount } : s
       )
     );
+    db.students.update(studentId, { feesPaid: amount });
   }, []);
 
   // Get gender-wise enrollment and attendance stats
@@ -244,10 +282,118 @@ export const AttendanceProvider = ({ children }) => {
     [students, records, today]
   );
 
+  // ─── CRUD Student Database Methods ──────────────────────
+  const addStudent = useCallback(async (student) => {
+    try {
+      await db.students.add(student);
+      const loaded = await db.students.toArray();
+      setStudents(loaded);
+      await refreshFaceRegistrations();
+    } catch (e) {
+      console.error('Failed to add student:', e);
+      throw e;
+    }
+  }, [refreshFaceRegistrations]);
+
+  const updateStudent = useCallback(async (studentId, updatedData) => {
+    try {
+      await db.students.update(studentId, updatedData);
+      const loaded = await db.students.toArray();
+      setStudents(loaded);
+      await refreshFaceRegistrations();
+    } catch (e) {
+      console.error('Failed to update student:', e);
+      throw e;
+    }
+  }, [refreshFaceRegistrations]);
+
+  const deleteStudent = useCallback(async (studentId) => {
+    try {
+      await db.students.delete(studentId);
+      await db.faceDescriptors.where('studentId').equals(studentId).delete();
+      const loaded = await db.students.toArray();
+      setStudents(loaded);
+      await refreshFaceRegistrations();
+    } catch (e) {
+      console.error('Failed to delete student:', e);
+      throw e;
+    }
+  }, [refreshFaceRegistrations]);
+
+  // ─── CRUD Teacher Database Methods ──────────────────────
+  const addTeacher = useCallback(async (teacher, password = 'teacher123') => {
+    try {
+      await db.teachers.add(teacher);
+      await db.users.add({
+        id: teacher.id,
+        name: teacher.name,
+        email: teacher.email,
+        password: password,
+        role: 'teacher',
+        schoolId: 'school-001',
+        phone: teacher.phone,
+        avatar: teacher.avatar,
+        assignedClasses: teacher.assignedClasses || []
+      });
+      const loaded = await db.teachers.toArray();
+      setTeachers(loaded);
+    } catch (e) {
+      console.error('Failed to add teacher:', e);
+      throw e;
+    }
+  }, []);
+
+  const updateTeacher = useCallback(async (teacherId, updatedData) => {
+    try {
+      await db.teachers.update(teacherId, updatedData);
+      
+      const userUpdates = {};
+      if (updatedData.name) userUpdates.name = updatedData.name;
+      if (updatedData.email) userUpdates.email = updatedData.email;
+      if (updatedData.phone) userUpdates.phone = updatedData.phone;
+      if (updatedData.avatar) userUpdates.avatar = updatedData.avatar;
+      if (updatedData.assignedClasses) userUpdates.assignedClasses = updatedData.assignedClasses;
+      
+      if (Object.keys(userUpdates).length > 0) {
+        await db.users.update(teacherId, userUpdates);
+      }
+      const loaded = await db.teachers.toArray();
+      setTeachers(loaded);
+    } catch (e) {
+      console.error('Failed to update teacher:', e);
+      throw e;
+    }
+  }, []);
+
+  const deleteTeacher = useCallback(async (teacherId) => {
+    try {
+      await db.teachers.delete(teacherId);
+      await db.users.delete(teacherId);
+      const loaded = await db.teachers.toArray();
+      setTeachers(loaded);
+    } catch (e) {
+      console.error('Failed to delete teacher:', e);
+      throw e;
+    }
+  }, []);
+
+  // ─── Class-Teacher Assignment Method ───────────────────
+  const updateClassTeacher = useCallback(async (classId, teacherId, teacherName) => {
+    try {
+      await db.classes.update(classId, { teacherId, teacherName });
+      const loaded = await db.classes.toArray();
+      setClasses(loaded);
+    } catch (e) {
+      console.error('Failed to update class teacher:', e);
+      throw e;
+    }
+  }, []);
+
   const value = {
     records,
     students,
     classes,
+    teachers,
     todayRecords,
     stats,
     mealsOrdered,
@@ -260,6 +406,13 @@ export const AttendanceProvider = ({ children }) => {
     getClassStudents,
     getClassTodayStats,
     refreshFaceRegistrations,
+    addStudent,
+    updateStudent,
+    deleteStudent,
+    addTeacher,
+    updateTeacher,
+    deleteTeacher,
+    updateClassTeacher
   };
 
   return (

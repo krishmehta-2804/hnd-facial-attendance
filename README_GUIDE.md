@@ -40,15 +40,26 @@ Parents can log in to view their child's daily attendance, meal status, and fees
 
 ## 🗄️ Backend Data Management (How to Update Roster & Passwords)
 
-The system's "backend database" is stored in [school_data.json](file:///Users/jaadu_king/Desktop/new_project/hnd-facial-attendance/src/services/school_data.json). There is **no database server to manage**. If you need to edit class teachers, add students, change phone numbers, or update passwords, follow these simple steps:
+The system supports two methods to manage and update credentials, teachers, and student rosters:
 
-### How to Edit Data (Zero-Code Method):
-1.  Log into your **GitHub Account** and navigate to your project repository: `hnd-facial-attendance`.
-2.  Navigate to the file path: `src/services/school_data.json`.
-3.  Click the **Edit (pencil icon)** button in the top right corner of the file viewer.
-4.  Make your changes directly in the text editor.
-5.  Scroll to the bottom, write a short message (e.g., "Added new student Rahul"), and click **Commit changes**.
-6.  **Done!** Vercel will automatically build the changes and update the live website on all devices within **30 seconds**.
+### Method A: In-App Database Manager (Visual Admin Dashboard)
+If you log in as the **System Administrator (`admin@hnd.edu`)**, you can manage everything directly from the web browser:
+1. Navigate to the **Settings** page in the sidebar.
+2. Select the **Manage Database** tab at the bottom of the settings menu.
+3. Choose from the three sub-tabs:
+   - **Students Directory**: View all students, search by name/admission number, filter by class, click **Add Student** to enroll a new child, or click the **Edit** / **Delete** icons.
+   - **Teachers**: Manage the teaching staff roster, register new teachers, edit their phones/emails, or delete records.
+   - **Passwords & Logins**: View active accounts (Admin, Headmaster, Teachers, Parents) and set new passwords directly by clicking **Change Password** (Key icon).
+4. All changes are saved locally to IndexedDB immediately and are active on this tablet.
+
+### Method B: Codebase JSON File (Global Sync Method):
+The core roster templates are stored in [school_data.json](file:///src/services/school_data.json). If you want to update the master copy globally across all school tablets:
+1. Log into your **GitHub Account** and navigate to your project repository: `hnd-facial-attendance`.
+2. Navigate to: `src/services/school_data.json`.
+3. Click the **Edit (pencil icon)** button.
+4. Make your changes in the editor (e.g. modify name, parent phone, or teacher password).
+5. Scroll to the bottom and click **Commit changes**.
+6. **Done!** Vercel will rebuild and deploy the updates globally to all tablets within **30 seconds**. When the app detects the new master copy, it will update local caches automatically.
 
 ---
 

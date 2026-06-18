@@ -7,9 +7,12 @@ import Dexie from 'dexie';
 export const db = new Dexie('HNDAttendanceDB');
 
 // Define schema structures:
-// version 1: students, faceDescriptors, pendingAttendance, cachedData
-db.version(1).stores({
-  students: 'id, name, rollNo, classId, className, faceRegistered',
+// version 2: added teachers, classes, users for client-side administration
+db.version(2).stores({
+  students: 'id, name, rollNo, classId, className, faceRegistered, parentPhone',
+  teachers: 'id, name, email, role, phone',
+  classes: 'id, name, teacherId',
+  users: 'id, email, password, role',
   faceDescriptors: 'id, studentId, descriptor',
   pendingAttendance: 'id, studentId, studentName, status, date, timestamp, synced',
   cachedData: 'key, value, updatedAt',

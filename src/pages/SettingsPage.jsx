@@ -1,19 +1,31 @@
 /**
- * Settings Page - System configurations and settings
+ * Settings Page - System configurations, Timings, and Admin Database Management
  */
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useAttendance } from '../contexts/AttendanceContext';
 import { SCHOOL_CONFIG, FACE_DETECTION_CONFIG } from '../utils/constants';
-import { Save, School, Clock, Camera, ShieldAlert, CloudLightning, ToggleLeft, ToggleRight, Check } from 'lucide-react';
+import db from '../services/offlineDB';
+import { 
+  Save, School, Clock, Camera, ShieldAlert, CloudLightning, 
+  ToggleLeft, ToggleRight, Check, Database, Plus, Edit2, Trash2, Key, X, Search
+} from 'lucide-react';
 
 const SettingsPage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, updatePassword } = useAuth();
+  const { 
+    students, classes, teachers,
+    addStudent, updateStudent, deleteStudent,
+    addTeacher, updateTeacher, deleteTeacher,
+    updateClassTeacher
+  } = useAttendance();
   
-  // Tabs: general, attendance, facial, sync
+  // Tabs: general, attendance, facial, sync, manage_data
   const [activeTab, setActiveTab] = useState('general');
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('Settings saved!');
 
-  // States for configs
+  // Config states
   const [schoolName, setSchoolName] = useState(SCHOOL_CONFIG.name);
   const [academicYear, setAcademicYear] = useState(SCHOOL_CONFIG.academicYear);
   const [startTime, setStartTime] = useState(SCHOOL_CONFIG.schoolStartTime);
@@ -23,10 +35,273 @@ const SettingsPage = () => {
   const [faceThreshold, setFaceThreshold] = useState(FACE_DETECTION_CONFIG.threshold);
   const [offlineSync, setOfflineSync] = useState(true);
 
+  // Admin Data Manager States
+  const [dataSubTab, setDataSubTab] = useState('students'); // 'students', 'teachers', 'passwords'
+  const [dbUsers, setDbUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedClassFilter, setSelectedClassFilter] = useState('all');
+
+  // Modal states
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('student'); // 'student', 'teacher', 'password'
+  const [modalMode, setModalMode] = useState('add'); // 'add', 'edit'
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  // Student Form States
+  const [studentName, setStudentName] = useState('');
+  const [studentRoll, setStudentRoll] = useState('');
+  const [studentAdm, setStudentAdm] = useState('');
+  const [studentClassId, setStudentClassId] = useState('');
+  const [studentGender, setStudentGender] = useState('male');
+  const [studentParentPhone, setStudentParentPhone] = useState('');
+  const [studentFather, setStudentFather] = useState('');
+  const [studentMother, setStudentMother] = useState('');
+
+  // Teacher Form States
+  const [teacherName, setTeacherName] = useState('');
+  const [teacherEmail, setTeacherEmail] = useState('');
+  const [teacherPhone, setTeacherPhone] = useState('');
+  const [teacherPassword, setTeacherPassword] = useState('teacher123');
+  const [teacherClassId, setTeacherClassId] = useState('');
+
+  // Password Form States
+  const [newPasswordValue, setNewPasswordValue] = useState('');
+
+  // Load all system credentials for management
+  const loadDbUsers = async () => {
+    try {
+      const users = await db.users.toArray();
+      setDbUsers(users);
+    } catch (e) {
+      console.error('Failed to load credentials list:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'manage_data' || dataSubTab === 'passwords') {
+      loadDbUsers();
+    }
+  }, [activeTab, dataSubTab]);
+
   const handleSave = (e) => {
     e.preventDefault();
+    setSuccessMsg('Settings saved!');
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
+  };
+
+  // ─── Search & Filters for Data Management ─────────────────────
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => {
+      const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            s.admissionNo.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesClass = selectedClassFilter === 'all' || s.classId === selectedClassFilter;
+      return matchesSearch && matchesClass;
+    });
+  }, [students, searchQuery, selectedClassFilter]);
+
+  const filteredTeachers = useMemo(() => {
+    return teachers.filter(t => 
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      t.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [teachers, searchQuery]);
+
+  const filteredUsers = useMemo(() => {
+    return dbUsers.filter(u => 
+      u.email.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      u.role.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [dbUsers, searchQuery]);
+
+  // ─── Modal Actions ───────────────────────────────────────────
+  const openAddStudent = () => {
+    setStudentName('');
+    setStudentRoll(students.length + 1);
+    setStudentAdm('');
+    setStudentClassId(classes[0]?.id || '');
+    setStudentGender('male');
+    setStudentParentPhone('');
+    setStudentFather('');
+    setStudentMother('');
+    
+    setModalType('student');
+    setModalMode('add');
+    setSelectedItem(null);
+    setShowModal(true);
+  };
+
+  const openEditStudent = (student) => {
+    setStudentName(student.name);
+    setStudentRoll(student.rollNo);
+    setStudentAdm(student.admissionNo);
+    setStudentClassId(student.classId);
+    setStudentGender(student.gender);
+    setStudentParentPhone(student.parentPhone);
+    setStudentFather(student.fatherName);
+    setStudentMother(student.motherName);
+    
+    setModalType('student');
+    setModalMode('edit');
+    setSelectedItem(student);
+    setShowModal(true);
+  };
+
+  const openAddTeacher = () => {
+    setTeacherName('');
+    setTeacherEmail('');
+    setTeacherPhone('');
+    setTeacherPassword('teacher123');
+    setTeacherClassId(classes[0]?.id || 'none');
+    
+    setModalType('teacher');
+    setModalMode('add');
+    setSelectedItem(null);
+    setShowModal(true);
+  };
+
+  const openEditTeacher = (teacher) => {
+    setTeacherName(teacher.name);
+    setTeacherEmail(teacher.email);
+    setTeacherPhone(teacher.phone || '');
+    setTeacherPassword('');
+    setTeacherClassId(teacher.assignedClasses?.[0] || 'none');
+    
+    setModalType('teacher');
+    setModalMode('edit');
+    setSelectedItem(teacher);
+    setShowModal(true);
+  };
+
+  const openChangePassword = (user) => {
+    setNewPasswordValue('');
+    setModalType('password');
+    setSelectedItem(user);
+    setShowModal(true);
+  };
+
+  // ─── CRUD Submit Handlers ─────────────────────────────────────
+  const handleStudentSubmit = async (e) => {
+    e.preventDefault();
+    const targetClass = classes.find(c => c.id === studentClassId);
+    const studentData = {
+      id: modalMode === 'add' ? `student-${studentAdm.toLowerCase().trim()}` : selectedItem.id,
+      admissionNo: studentAdm.trim().toUpperCase(),
+      name: studentName.trim(),
+      rollNo: parseInt(studentRoll) || students.length + 1,
+      classId: studentClassId,
+      className: targetClass ? (targetClass.name === 'UKG' ? 'UKG-A' : `Class ${targetClass.name}-A`) : '',
+      grade: targetClass ? targetClass.grade : 1,
+      section: 'A',
+      gender: studentGender,
+      schoolId: 'school-001',
+      parentPhone: studentParentPhone.trim(),
+      enrollmentDate: modalMode === 'add' ? format(new Date(), 'dd-MM-yyyy') : selectedItem.enrollmentDate,
+      faceRegistered: modalMode === 'add' ? false : selectedItem.faceRegistered,
+      avatar: studentName.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase(),
+      feesPaid: modalMode === 'add' ? 600 : selectedItem.feesPaid || 600,
+      fatherName: studentFather.trim() || 'Not Provided',
+      motherName: studentMother.trim() || 'Not Provided'
+    };
+
+    try {
+      if (modalMode === 'add') {
+        await addStudent(studentData);
+        setSuccessMsg(`Student "${studentName}" added successfully.`);
+      } else {
+        await updateStudent(selectedItem.id, studentData);
+        setSuccessMsg(`Student "${studentName}" updated successfully.`);
+      }
+      setShowModal(false);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err) {
+      alert(`Database Error: ${err.message || err.toString()}`);
+    }
+  };
+
+  const handleTeacherSubmit = async (e) => {
+    e.preventDefault();
+    const avatarInitials = teacherName.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase();
+    const assignedClasses = teacherClassId === 'none' ? [] : [teacherClassId];
+    
+    const teacherData = {
+      id: modalMode === 'add' ? `teacher-${teacherName.toLowerCase().replace(/\s+/g, '-')}` : selectedItem.id,
+      name: teacherName.trim(),
+      email: teacherEmail.trim().toLowerCase(),
+      role: 'teacher',
+      schoolId: 'school-001',
+      assignedClasses,
+      phone: teacherPhone.trim(),
+      avatar: avatarInitials
+    };
+
+    try {
+      if (modalMode === 'add') {
+        await addTeacher(teacherData, teacherPassword);
+        // Also map teacher to class if assigned
+        if (teacherClassId !== 'none') {
+          await updateClassTeacher(teacherClassId, teacherData.id, `${teacherName} (Assigned)`);
+        }
+        setSuccessMsg(`Teacher "${teacherName}" added.`);
+      } else {
+        await updateTeacher(selectedItem.id, teacherData);
+        if (teacherClassId !== 'none') {
+          await updateClassTeacher(teacherClassId, selectedItem.id, `${teacherName} (Assigned)`);
+        }
+        setSuccessMsg(`Teacher "${teacherName}" details updated.`);
+      }
+      setShowModal(false);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err) {
+      alert(`Database Error: ${err.message || err.toString()}`);
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!newPasswordValue.trim() || newPasswordValue.length < 4) {
+      alert('Password must be at least 4 characters long.');
+      return;
+    }
+
+    try {
+      await updatePassword(selectedItem.id, newPasswordValue.trim());
+      await loadDbUsers();
+      setSuccessMsg(`Password for ${selectedItem.email} successfully updated.`);
+      setShowModal(false);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err) {
+      alert(`Database Error: ${err.message || err.toString()}`);
+    }
+  };
+
+  const handleDeleteStudent = async (studentId, name) => {
+    if (confirm(`Are you sure you want to delete student "${name}"? This will also wipe their face descriptors.`)) {
+      try {
+        await deleteStudent(studentId);
+        setSuccessMsg(`Student "${name}" deleted.`);
+        setSavedSuccess(true);
+        setTimeout(() => setSavedSuccess(false), 3000);
+      } catch (err) {
+        alert(err.toString());
+      }
+    }
+  };
+
+  const handleDeleteTeacher = async (teacherId, name) => {
+    if (confirm(`Are you sure you want to delete teacher "${name}"? This removes their account, logins, and class assignments.`)) {
+      try {
+        await deleteTeacher(teacherId);
+        setSuccessMsg(`Teacher "${name}" deleted.`);
+        setSavedSuccess(true);
+        setTimeout(() => setSavedSuccess(false), 3000);
+      } catch (err) {
+        alert(err.toString());
+      }
+    }
   };
 
   return (
@@ -34,19 +309,21 @@ const SettingsPage = () => {
       <div className="page-header">
         <div>
           <h1>System Settings</h1>
-          <p>Configure academic calendars, camera inputs, and sync rules</p>
+          <p>Configure academic calendars, thresholds, and manage school directory database</p>
         </div>
         <div className="page-actions">
           {savedSuccess && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--success)', fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>
               <Check size={16} />
-              <span>Settings saved!</span>
+              <span>{successMsg}</span>
             </div>
           )}
-          <button className="btn btn-primary" onClick={handleSave}>
-            <Save size={16} />
-            Save Settings
-          </button>
+          {activeTab !== 'manage_data' && (
+            <button className="btn btn-primary" onClick={handleSave}>
+              <Save size={16} />
+              Save Settings
+            </button>
+          )}
         </div>
       </div>
 
@@ -86,173 +363,485 @@ const SettingsPage = () => {
               <CloudLightning size={16} />
               <span>Database & Sync</span>
             </button>
+            {currentUser?.role === 'admin' && (
+              <button
+                className={`btn ${activeTab === 'manage_data' ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setActiveTab('manage_data')}
+                style={{ justifyContent: 'flex-start', gap: '10px', marginTop: 'var(--space-sm)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)' }}
+              >
+                <Database size={16} />
+                <span>Manage Database</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Tab contents */}
         <div className="card" style={{ padding: 'var(--space-xl)' }}>
-          <form onSubmit={handleSave}>
-            {activeTab === 'general' && (
-              <div>
-                <h3 style={{ marginBottom: 'var(--space-lg)' }}>School Profile</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>School Name</label>
-                    <input
-                      type="text"
-                      className="input"
-                      value={schoolName}
-                      onChange={(e) => setSchoolName(e.target.value)}
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
-                    />
-                  </div>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>School Code</label>
-                    <input
-                      type="text"
-                      className="input"
-                      defaultValue={SCHOOL_CONFIG.code}
-                      disabled
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-tertiary)', cursor: 'not-allowed' }}
-                    />
-                  </div>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Academic Year</label>
-                    <input
-                      type="text"
-                      className="input"
-                      value={academicYear}
-                      onChange={(e) => setAcademicYear(e.target.value)}
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
-                    />
-                  </div>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>District</label>
-                    <input
-                      type="text"
-                      className="input"
-                      defaultValue="Karnal"
-                      disabled
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-tertiary)', cursor: 'not-allowed' }}
-                    />
-                  </div>
+          {activeTab === 'general' && (
+            <form onSubmit={handleSave}>
+              <h3 style={{ marginBottom: 'var(--space-lg)' }}>School Profile</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>School Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
+                  />
+                </div>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>School Code</label>
+                  <input
+                    type="text"
+                    className="input"
+                    defaultValue={SCHOOL_CONFIG.code}
+                    disabled
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-tertiary)', cursor: 'not-allowed' }}
+                  />
+                </div>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Academic Year</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={academicYear}
+                    onChange={(e) => setAcademicYear(e.target.value)}
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
+                  />
+                </div>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>District</label>
+                  <input
+                    type="text"
+                    className="input"
+                    defaultValue="Karnal"
+                    disabled
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-tertiary)', cursor: 'not-allowed' }}
+                  />
                 </div>
               </div>
-            )}
+            </form>
+          )}
 
-            {activeTab === 'attendance' && (
-              <div>
-                <h3 style={{ marginBottom: 'var(--space-lg)' }}>Timings & Attendance Rules</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>School Start Time</label>
-                    <input
-                      type="time"
-                      className="input"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
-                    />
-                  </div>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>School End Time</label>
-                    <input
-                      type="time"
-                      className="input"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
-                    />
-                  </div>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Late Grace Period (Minutes)</label>
-                    <input
-                      type="number"
-                      className="input"
-                      value={lateThreshold}
-                      onChange={(e) => setLateThreshold(Number(e.target.value))}
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
-                    />
-                  </div>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Minimum Required Attendance %</label>
-                    <input
-                      type="number"
-                      className="input"
-                      value={minAttendance}
-                      onChange={(e) => setMinAttendance(Number(e.target.value))}
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
-                    />
-                  </div>
+          {activeTab === 'attendance' && (
+            <form onSubmit={handleSave}>
+              <h3 style={{ marginBottom: 'var(--space-lg)' }}>Timings & Attendance Rules</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>School Start Time</label>
+                  <input
+                    type="time"
+                    className="input"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
+                  />
+                </div>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>School End Time</label>
+                  <input
+                    type="time"
+                    className="input"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
+                  />
+                </div>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Late Grace Period (Minutes)</label>
+                  <input
+                    type="number"
+                    className="input"
+                    value={lateThreshold}
+                    onChange={(e) => setLateThreshold(Number(e.target.value))}
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
+                  />
+                </div>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Minimum Required Attendance %</label>
+                  <input
+                    type="number"
+                    className="input"
+                    value={minAttendance}
+                    onChange={(e) => setMinAttendance(Number(e.target.value))}
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
+                  />
                 </div>
               </div>
-            )}
+            </form>
+          )}
 
-            {activeTab === 'facial' && (
-              <div>
-                <h3 style={{ marginBottom: 'var(--space-lg)' }}>Facial Recognition Config</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-lg)' }}>
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Detection Confidence Threshold (0.1 - 1.0)</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="1.0"
-                        step="0.05"
-                        value={faceThreshold}
-                        onChange={(e) => setFaceThreshold(parseFloat(e.target.value))}
-                        style={{ flex: 1 }}
-                      />
-                      <span style={{ fontWeight: 'bold', minWidth: '40px' }}>{faceThreshold}</span>
-                    </div>
-                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Higher values reduce false positives but might miss faces. Recommended: 0.5 - 0.6.</span>
+          {activeTab === 'facial' && (
+            <form onSubmit={handleSave}>
+              <h3 style={{ marginBottom: 'var(--space-lg)' }}>Facial Recognition Config</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-lg)' }}>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Detection Confidence Threshold (0.1 - 1.0)</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1.0"
+                      step="0.05"
+                      value={faceThreshold}
+                      onChange={(e) => setFaceThreshold(parseFloat(e.target.value))}
+                      style={{ flex: 1 }}
+                    />
+                    <span style={{ fontWeight: 'bold', minWidth: '40px' }}>{faceThreshold}</span>
                   </div>
-
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'var(--space-md)' }}>
-                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Default Camera Device</label>
-                    <select
-                      style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
-                    >
-                      <option>Front-Facing Camera (Tablet default)</option>
-                      <option>Back-Facing Camera</option>
-                      <option>External USB Camera</option>
-                    </select>
-                  </div>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Higher values reduce false positives but might miss faces. Recommended: 0.5 - 0.6.</span>
                 </div>
               </div>
-            )}
+            </form>
+          )}
 
-            {activeTab === 'sync' && (
-              <div>
-                <h3 style={{ marginBottom: 'var(--space-lg)' }}>Centralized Database & Offline Sync</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-md)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius)' }}>
-                    <div>
-                      <h4 style={{ margin: 0 }}>Offline Mode / Local Cache</h4>
-                      <p style={{ margin: '4px 0 0 0', fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Allow database sync to wait until stable internet is active</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setOfflineSync(!offlineSync)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)' }}
-                    >
-                      {offlineSync ? <ToggleRight size={40} /> : <ToggleLeft size={40} />}
+          {activeTab === 'sync' && (
+            <form onSubmit={handleSave}>
+              <h3 style={{ marginBottom: 'var(--space-lg)' }}>Centralized Database & Offline Sync</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-md)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius)' }}>
+                  <div>
+                    <h4 style={{ margin: 0 }}>Offline Mode / Local Cache</h4>
+                    <p style={{ margin: '4px 0 0 0', fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Allow database sync to wait until stable internet is active</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOfflineSync(!offlineSync)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)' }}
+                  >
+                    {offlineSync ? <ToggleRight size={40} /> : <ToggleLeft size={40} />}
+                  </button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: 'var(--space-md)', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 'var(--radius)', color: 'var(--accent-light)' }}>
+                  <ShieldAlert size={20} />
+                  <span style={{ fontSize: 'var(--font-size-sm)' }}>
+                    Firebase central DB credentials can be configured using environment variables like <code>VITE_FIREBASE_API_KEY</code>.
+                  </span>
+                </div>
+              </div>
+            </form>
+          )}
+
+          {/* Database management console for admins */}
+          {activeTab === 'manage_data' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', pb: 'var(--space-md)', mb: 'var(--space-lg)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+                {/* sub-tabs */}
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <button 
+                    className={`btn ${dataSubTab === 'students' ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => { setDataSubTab('students'); setSearchQuery(''); }}
+                  >
+                    Students Directory ({students.length})
+                  </button>
+                  <button 
+                    className={`btn ${dataSubTab === 'teachers' ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => { setDataSubTab('teachers'); setSearchQuery(''); }}
+                  >
+                    Teachers ({teachers.length})
+                  </button>
+                  <button 
+                    className={`btn ${dataSubTab === 'passwords' ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => { setDataSubTab('passwords'); setSearchQuery(''); }}
+                  >
+                    Passwords & Logins
+                  </button>
+                </div>
+
+                {/* Add actions */}
+                <div>
+                  {dataSubTab === 'students' && (
+                    <button className="btn btn-primary" onClick={openAddStudent}>
+                      <Plus size={16} />
+                      Add Student
                     </button>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: 'var(--space-md)', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 'var(--radius)', color: 'var(--accent-light)' }}>
-                    <ShieldAlert size={20} />
-                    <span style={{ fontSize: 'var(--font-size-sm)' }}>
-                      Firebase central DB credentials can be configured using environment variable: <code>REACT_APP_FIREBASE_API_KEY</code>.
-                    </span>
-                  </div>
+                  )}
+                  {dataSubTab === 'teachers' && (
+                    <button className="btn btn-primary" onClick={openAddTeacher}>
+                      <Plus size={16} />
+                      Add Teacher
+                    </button>
+                  )}
                 </div>
               </div>
-            )}
-          </form>
+
+              {/* Filters toolbar */}
+              <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-md)', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                  <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                  <input
+                    type="text"
+                    placeholder={`Search ${dataSubTab}...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ width: '100%', padding: '10px 10px 10px 32px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
+                  />
+                </div>
+                {dataSubTab === 'students' && (
+                  <select
+                    value={selectedClassFilter}
+                    onChange={(e) => setSelectedClassFilter(e.target.value)}
+                    style={{ padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)' }}
+                  >
+                    <option value="all">All Classes</option>
+                    {classes.map(c => (
+                      <option key={c.id} value={c.id}>Class {c.name}-{c.section}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Table rendering */}
+              <div className="table-container" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+                {dataSubTab === 'students' && (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Roll</th>
+                        <th>Name</th>
+                        <th>Class</th>
+                        <th>Admission No</th>
+                        <th>Parent Phone</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredStudents.length > 0 ? filteredStudents.map(s => (
+                        <tr key={s.id}>
+                          <td>{s.rollNo}</td>
+                          <td style={{ fontWeight: 600 }}>{s.name}</td>
+                          <td>{s.className}</td>
+                          <td><code>{s.admissionNo}</code></td>
+                          <td>{s.parentPhone}</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button className="btn btn-ghost" style={{ padding: '6px' }} onClick={() => openEditStudent(s)} title="Edit Student">
+                                <Edit2 size={14} style={{ color: 'var(--accent)' }} />
+                              </button>
+                              <button className="btn btn-ghost" style={{ padding: '6px' }} onClick={() => handleDeleteStudent(s.id, s.name)} title="Delete Student">
+                                <Trash2 size={14} style={{ color: 'var(--danger)' }} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )) : (
+                        <tr><td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-lg)' }}>No students found matching filters.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                )}
+
+                {dataSubTab === 'teachers' && (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Assigned Class</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTeachers.length > 0 ? filteredTeachers.map(t => (
+                        <tr key={t.id}>
+                          <td style={{ fontWeight: 600 }}>{t.name}</td>
+                          <td>{t.email}</td>
+                          <td>{t.phone || 'N/A'}</td>
+                          <td>{t.assignedClasses?.[0] ? classes.find(c => c.id === t.assignedClasses[0])?.name || 'Class Assigned' : 'None'}</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button className="btn btn-ghost" style={{ padding: '6px' }} onClick={() => openEditTeacher(t)} title="Edit Teacher">
+                                <Edit2 size={14} style={{ color: 'var(--accent)' }} />
+                              </button>
+                              <button className="btn btn-ghost" style={{ padding: '6px' }} onClick={() => handleDeleteTeacher(t.id, t.name)} title="Delete Teacher">
+                                <Trash2 size={14} style={{ color: 'var(--danger)' }} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )) : (
+                        <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-lg)' }}>No teachers found.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                )}
+
+                {dataSubTab === 'passwords' && (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name / Role</th>
+                        <th>Login Email / ID</th>
+                        <th>Role</th>
+                        <th>Password</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.length > 0 ? filteredUsers.map(u => (
+                        <tr key={u.id}>
+                          <td style={{ fontWeight: 600 }}>{u.name}</td>
+                          <td><code>{u.email}</code></td>
+                          <td><span className={`badge badge-${u.role === 'admin' ? 'danger' : u.role === 'headmaster' ? 'success' : 'info'}`}>{u.role.toUpperCase()}</span></td>
+                          <td><code>••••••••</code> ({u.password})</td>
+                          <td>
+                            <button className="btn btn-ghost" style={{ padding: '6px', display: 'flex', gap: '4px', alignItems: 'center' }} onClick={() => openChangePassword(u)}>
+                              <Key size={14} style={{ color: 'var(--warning)' }} />
+                              <span style={{ fontSize: 'var(--font-size-xs)' }}>Change</span>
+                            </button>
+                          </td>
+                        </tr>
+                      )) : (
+                        <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-lg)' }}>No accounts found.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Database CRUD Modals */}
+      {showModal && (
+        <div>
+          <div className="modal-backdrop" onClick={() => setShowModal(false)} />
+          <div className="modal glass" style={{ maxWidth: '600px', display: 'block', zIndex: 1000 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-xl)', borderBottom: '1px solid var(--border)', paddingBottom: 'var(--space-md)' }}>
+              <h3 style={{ margin: 0 }}>
+                {modalType === 'student' && `${modalMode === 'add' ? 'Add' : 'Edit'} Student`}
+                {modalType === 'teacher' && `${modalMode === 'add' ? 'Add' : 'Edit'} Teacher`}
+                {modalType === 'password' && `Change Password`}
+              </h3>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Student Form */}
+            {modalType === 'student' && (
+              <form onSubmit={handleStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Full Name</label>
+                    <input type="text" className="input" required value={studentName} onChange={(e) => setStudentName(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Admission Number</label>
+                    <input type="text" className="input" required placeholder="CSCBV-HR4237-..." disabled={modalMode === 'edit'} value={studentAdm} onChange={(e) => setStudentAdm(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: modalMode === 'edit' ? 'var(--text-tertiary)' : 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Class</label>
+                    <select value={studentClassId} onChange={(e) => setStudentClassId(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }}>
+                      {classes.map(c => (
+                        <option key={c.id} value={c.id}>Class {c.name}-{c.section}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Roll No</label>
+                    <input type="number" className="input" required value={studentRoll} onChange={(e) => setStudentRoll(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Gender</label>
+                    <select value={studentGender} onChange={(e) => setStudentGender(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }}>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Parent Mobile Number</label>
+                    <input type="text" className="input" required pattern="\d{10}" placeholder="10-digit number" value={studentParentPhone} onChange={(e) => setStudentParentPhone(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Father's Name</label>
+                    <input type="text" className="input" value={studentFather} onChange={(e) => setStudentFather(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Mother's Name</label>
+                    <input type="text" className="input" value={studentMother} onChange={(e) => setStudentMother(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-md)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
+                  <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary">Save Student</button>
+                </div>
+              </form>
+            )}
+
+            {/* Teacher Form */}
+            {modalType === 'teacher' && (
+              <form onSubmit={handleTeacherSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Full Name</label>
+                    <input type="text" className="input" required value={teacherName} onChange={(e) => setTeacherName(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Email Address</label>
+                    <input type="email" className="input" required placeholder="name@hnd.edu" disabled={modalMode === 'edit'} value={teacherEmail} onChange={(e) => setTeacherEmail(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: modalMode === 'edit' ? 'var(--text-tertiary)' : 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Mobile Number</label>
+                    <input type="text" className="input" value={teacherPhone} onChange={(e) => setTeacherPhone(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Class Assignment</label>
+                    <select value={teacherClassId} onChange={(e) => setTeacherClassId(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }}>
+                      <option value="none">No Class Assignment</option>
+                      {classes.map(c => (
+                        <option key={c.id} value={c.id}>Class {c.name}-{c.section}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {modalMode === 'add' && (
+                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px', gridColumn: 'span 2' }}>
+                      <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Initial Account Password</label>
+                      <input type="text" className="input" required value={teacherPassword} onChange={(e) => setTeacherPassword(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-md)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
+                  <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary">Save Teacher</button>
+                </div>
+              </form>
+            )}
+
+            {/* Change Password Form */}
+            {modalType === 'password' && (
+              <form onSubmit={handlePasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+                    Setting password for: <strong>{selectedItem?.name}</strong> (<code>{selectedItem?.email}</code>)
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'var(--space-md)' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>New Password</label>
+                    <input 
+                      type="text" 
+                      className="input" 
+                      required 
+                      placeholder="At least 4 characters"
+                      value={newPasswordValue} 
+                      onChange={(e) => setNewPasswordValue(e.target.value)} 
+                      style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} 
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-md)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
+                  <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary">Update Password</button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
