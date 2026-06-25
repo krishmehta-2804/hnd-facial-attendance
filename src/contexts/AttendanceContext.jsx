@@ -168,13 +168,32 @@ export const AttendanceProvider = ({ children }) => {
   }, []);
 
   // Record student fee payment
-  const recordFeePayment = useCallback((studentId, amount) => {
+  const recordFeePayment = useCallback((studentId, amount, remarks = '') => {
     setStudents((prev) =>
-      prev.map((s) =>
-        s.id === studentId ? { ...s, feesPaid: (s.feesPaid || 0) + amount } : s
-      )
+      prev.map((s) => {
+        if (s.id === studentId) {
+          const updatedFeesPaid = (s.feesPaid || 0) + amount;
+          const newPayments = s.feePayments ? [...s.feePayments] : [];
+          newPayments.push({
+            date: format(new Date(), 'yyyy-MM-dd HH:mm'),
+            amount,
+            remarks: remarks || 'Payment received'
+          });
+
+          db.students.update(studentId, { 
+            feesPaid: updatedFeesPaid,
+            feePayments: newPayments
+          });
+
+          return {
+            ...s,
+            feesPaid: updatedFeesPaid,
+            feePayments: newPayments
+          };
+        }
+        return s;
+      })
     );
-    db.students.update(studentId, { feesPaid: amount });
   }, []);
 
   // Get gender-wise enrollment and attendance stats

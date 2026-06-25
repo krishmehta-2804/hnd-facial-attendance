@@ -304,8 +304,8 @@ const MealPlanningPage = () => {
                 <th>Date</th>
                 <th>Present</th>
                 <th>Meals Served</th>
-                <th>Est. Qty (kg)</th>
                 <th>Actual Qty (kg)</th>
+                <th>Est. Qty (kg)</th>
                 <th>Wastage (kg)</th>
                 <th>Cost (₹)</th>
               </tr>
@@ -316,8 +316,8 @@ const MealPlanningPage = () => {
                   <td style={{ fontWeight: 600 }}>{meal.dateLabel}</td>
                   <td>{meal.totalPresent}</td>
                   <td>{meal.mealsServed}</td>
-                  <td>{meal.estimatedQuantityKg.toFixed(1)}</td>
                   <td>{meal.actualQuantityKg.toFixed(1)}</td>
+                  <td>{meal.estimatedQuantityKg.toFixed(1)}</td>
                   <td>
                     <span style={{
                       color: meal.wastageKg > 2 ? 'var(--danger)' : 'var(--success)',

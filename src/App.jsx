@@ -14,6 +14,7 @@ import ReportsPage from './pages/ReportsPage';
 import MealPlanningPage from './pages/MealPlanningPage';
 import FaceRegisterPage from './pages/FaceRegisterPage';
 import SettingsPage from './pages/SettingsPage';
+import AdminPortalPage from './pages/AdminPortalPage';
 import { ROUTES } from './utils/constants';
 
 // Route Guard for authenticated pages
@@ -62,6 +63,16 @@ const App = () => {
               <Route path={ROUTES.FACE_REGISTER} element={<FaceRegisterPage />} />
               <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
             </Route>
+
+            {/* Standalone Admin Portal Route */}
+            <Route
+              path={ROUTES.ADMIN_PORTAL}
+              element={
+                <ProtectedRoute>
+                  <AdminPortalPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Fallback route */}
             <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />

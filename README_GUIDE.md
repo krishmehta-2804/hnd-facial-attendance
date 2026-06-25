@@ -42,15 +42,21 @@ Parents can log in to view their child's daily attendance, meal status, and fees
 
 The system supports two methods to manage and update credentials, teachers, and student rosters:
 
-### Method A: In-App Database Manager (Visual Admin Dashboard)
-If you log in as the **System Administrator (`admin@hnd.edu`)**, you can manage everything directly from the web browser:
-1. Navigate to the **Settings** page in the sidebar.
-2. Select the **Manage Database** tab at the bottom of the settings menu.
-3. Choose from the three sub-tabs:
-   - **Students Directory**: View all students, search by name/admission number, filter by class, click **Add Student** to enroll a new child, or click the **Edit** / **Delete** icons.
-   - **Teachers**: Manage the teaching staff roster, register new teachers, edit their phones/emails, or delete records.
-   - **Passwords & Logins**: View active accounts (Admin, Headmaster, Teachers, Parents) and set new passwords directly by clicking **Change Password** (Key icon).
-4. All changes are saved locally to IndexedDB immediately and are active on this tablet.
+### Method A: Visual Database Managers (Standalone Portal & Settings Tab)
+If you log in as the **System Administrator (`admin@hnd.edu`)**, you have two ways to edit records directly:
+
+1. **Dedicated Standalone Admin Portal**:
+   * Navigate directly to: [/admin-portal](file:///admin-portal) (or click the "Open Standalone Portal" button inside Settings -> Manage Database).
+   * This is a full-page admin database dashboard with no sidebar, designed specifically for clean, quick administration.
+   
+2. **In-App settings Database tab**:
+   * Go to the **Settings** page in the sidebar and select the **Manage Database** tab.
+
+Under either manager, you can:
+*   **Students Directory**: View all students, search by name/admission number, filter by class, click **Add Student** to enroll a new child, or click **Edit** / **Delete**. You can choose starting dues of ₹0, ₹200, ₹400, or ₹600.
+*   **Teachers**: Manage the teaching staff roster, register new teachers, edit their phone numbers/emails, or delete records.
+*   **Passwords & Logins**: View active accounts (Admin, Headmaster, Teachers, Parents) and change passwords directly by clicking the **Change Password** (Key) icon.
+*   All changes are saved locally to IndexedDB immediately and are active on this tablet.
 
 ### Method B: Codebase JSON File (Global Sync Method):
 The core roster templates are stored in [school_data.json](file:///src/services/school_data.json). If you want to update the master copy globally across all school tablets:

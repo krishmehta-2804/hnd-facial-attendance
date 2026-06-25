@@ -101,6 +101,7 @@ export const ROUTES = Object.freeze({
   ANALYTICS: '/analytics',
   MEAL_TRACKING: '/meal-tracking',
   SETTINGS: '/settings',
+  ADMIN_PORTAL: '/admin-portal',
   PROFILE: '/profile',
   NOT_FOUND: '*',
 });

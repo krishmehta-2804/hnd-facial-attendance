@@ -13,6 +13,7 @@ const StudentsPage = () => {
   const [selectedClass, setSelectedClass] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [paymentRemarks, setPaymentRemarks] = useState('');
 
   const getFeeStatus = (student) => {
     const paid = student.feesPaid || 0;
@@ -363,37 +364,77 @@ const StudentsPage = () => {
                     {/* Record Payment Presets */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)', fontWeight: 600 }}>Record Payment:</span>
+                      
                       <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-                        <button className="btn btn-sm btn-ghost" onClick={() => recordFeePayment(currentStudent.id, 200)} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹200 (1 Mo)</button>
-                        <button className="btn btn-sm btn-ghost" onClick={() => recordFeePayment(currentStudent.id, 400)} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹400 (2 Mo)</button>
-                        <button className="btn btn-sm btn-ghost" onClick={() => recordFeePayment(currentStudent.id, 600)} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹600 (3 Mo)</button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => {
+                          recordFeePayment(currentStudent.id, 200, paymentRemarks);
+                          setPaymentRemarks('');
+                        }} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹200 (1 Mo)</button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => {
+                          recordFeePayment(currentStudent.id, 400, paymentRemarks);
+                          setPaymentRemarks('');
+                        }} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹400 (2 Mo)</button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => {
+                          recordFeePayment(currentStudent.id, 600, paymentRemarks);
+                          setPaymentRemarks('');
+                        }} style={{ flex: 1, border: '1px solid var(--border)' }}>+₹600 (3 Mo)</button>
                       </div>
-                      <div style={{ display: 'flex', gap: 'var(--space-sm)', marginTop: '4px' }}>
+
+                      <div style={{ display: 'flex', gap: 'var(--space-sm)', marginTop: '4px', flexDirection: 'column' }}>
                         <input 
-                          type="number" 
-                          id="customFeeAmount" 
-                          placeholder="Custom Amount (₹)" 
-                          style={{ flex: 1, padding: '8px 12px', height: '36px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)', fontSize: 'var(--font-size-sm)' }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              const val = parseInt(e.target.value);
-                              if (val > 0) {
-                                recordFeePayment(currentStudent.id, val);
-                                e.target.value = '';
-                              }
-                            }
-                          }}
+                          type="text" 
+                          placeholder="Payment Remarks (e.g. Cash, June fees, Paid by Mother)"
+                          value={paymentRemarks}
+                          onChange={(e) => setPaymentRemarks(e.target.value)}
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)', fontSize: 'var(--font-size-sm)' }}
                         />
-                        <button className="btn btn-primary btn-sm" onClick={() => {
-                          const input = document.getElementById('customFeeAmount');
-                          const val = parseInt(input.value);
-                          if (val > 0) {
-                            recordFeePayment(currentStudent.id, val);
-                            input.value = '';
-                          }
-                        }}>Pay Custom</button>
+                        <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                          <input 
+                            type="number" 
+                            id="customFeeAmount" 
+                            placeholder="Custom Amount (₹)" 
+                            style={{ flex: 1, padding: '8px 12px', height: '36px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text)', fontSize: 'var(--font-size-sm)' }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const val = parseInt(e.target.value);
+                                if (val > 0) {
+                                  recordFeePayment(currentStudent.id, val, paymentRemarks);
+                                  setPaymentRemarks('');
+                                  e.target.value = '';
+                                }
+                              }
+                            }}
+                          />
+                          <button className="btn btn-primary btn-sm" onClick={() => {
+                            const input = document.getElementById('customFeeAmount');
+                            const val = parseInt(input.value);
+                            if (val > 0) {
+                              recordFeePayment(currentStudent.id, val, paymentRemarks);
+                              setPaymentRemarks('');
+                              input.value = '';
+                            }
+                          }}>Pay Custom</button>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Payment History List */}
+                    {currentStudent.feePayments && currentStudent.feePayments.length > 0 && (
+                      <div style={{ marginTop: 'var(--space-lg)', borderTop: '1px dashed var(--border)', paddingTop: 'var(--space-sm)' }}>
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)', fontWeight: 600 }}>Payment Log:</span>
+                        <div style={{ maxHeight: '100px', overflowY: 'auto', background: 'var(--bg-secondary)', padding: 'var(--space-sm)', borderRadius: 'var(--radius)', marginTop: '4px', fontSize: 'var(--font-size-xs)' }}>
+                          {currentStudent.feePayments.slice().reverse().map((pay, i) => (
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+                              <div>
+                                <span style={{ color: 'var(--text-tertiary)', marginRight: '6px' }}>{pay.date}</span>
+                                <span style={{ fontWeight: 500 }}>{pay.remarks}</span>
+                              </div>
+                              <span style={{ color: 'var(--success)', fontWeight: 600 }}>+₹{pay.amount}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })()}

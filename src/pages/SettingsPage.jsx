@@ -2,9 +2,10 @@
  * Settings Page - System configurations, Timings, and Admin Database Management
  */
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAttendance } from '../contexts/AttendanceContext';
-import { SCHOOL_CONFIG, FACE_DETECTION_CONFIG } from '../utils/constants';
+import { SCHOOL_CONFIG, FACE_DETECTION_CONFIG, ROUTES } from '../utils/constants';
 import db from '../services/offlineDB';
 import { 
   Save, School, Clock, Camera, ShieldAlert, CloudLightning, 
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 
 const SettingsPage = () => {
+  const navigate = useNavigate();
   const { currentUser, updatePassword } = useAuth();
   const { 
     students, classes, teachers,
@@ -56,6 +58,7 @@ const SettingsPage = () => {
   const [studentParentPhone, setStudentParentPhone] = useState('');
   const [studentFather, setStudentFather] = useState('');
   const [studentMother, setStudentMother] = useState('');
+  const [studentDueOption, setStudentDueOption] = useState('0'); // '0', '200', '400', '600'
 
   // Teacher Form States
   const [teacherName, setTeacherName] = useState('');
@@ -114,6 +117,14 @@ const SettingsPage = () => {
     );
   }, [dbUsers, searchQuery]);
 
+  const getCurrentTargetDue = () => {
+    const currentMonth = new Date().getMonth();
+    let monthsElapsed = currentMonth - 3;
+    if (monthsElapsed < 0) monthsElapsed += 12;
+    monthsElapsed += 1;
+    return monthsElapsed * 200;
+  };
+
   // ─── Modal Actions ───────────────────────────────────────────
   const openAddStudent = () => {
     setStudentName('');
@@ -124,6 +135,7 @@ const SettingsPage = () => {
     setStudentParentPhone('');
     setStudentFather('');
     setStudentMother('');
+    setStudentDueOption('0');
     
     setModalType('student');
     setModalMode('add');
@@ -140,6 +152,13 @@ const SettingsPage = () => {
     setStudentParentPhone(student.parentPhone);
     setStudentFather(student.fatherName);
     setStudentMother(student.motherName);
+    
+    const targetDue = getCurrentTargetDue();
+    const dueAmount = targetDue - (student.feesPaid || 0);
+    if (dueAmount === 200) setStudentDueOption('200');
+    else if (dueAmount === 400) setStudentDueOption('400');
+    else if (dueAmount === 600) setStudentDueOption('600');
+    else setStudentDueOption('0');
     
     setModalType('student');
     setModalMode('edit');
@@ -199,7 +218,13 @@ const SettingsPage = () => {
       enrollmentDate: modalMode === 'add' ? format(new Date(), 'dd-MM-yyyy') : selectedItem.enrollmentDate,
       faceRegistered: modalMode === 'add' ? false : selectedItem.faceRegistered,
       avatar: studentName.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase(),
-      feesPaid: modalMode === 'add' ? 600 : selectedItem.feesPaid || 600,
+      feesPaid: (() => {
+        const targetDue = getCurrentTargetDue();
+        if (studentDueOption === '200') return Math.max(0, targetDue - 200);
+        if (studentDueOption === '400') return Math.max(0, targetDue - 400);
+        if (studentDueOption === '600') return Math.max(0, targetDue - 600);
+        return targetDue;
+      })(),
       fatherName: studentFather.trim() || 'Not Provided',
       motherName: studentMother.trim() || 'Not Provided'
     };
@@ -552,7 +577,15 @@ const SettingsPage = () => {
                 </div>
 
                 {/* Add actions */}
-                <div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    className="btn btn-ghost"
+                    onClick={() => navigate(ROUTES.ADMIN_PORTAL)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent)', border: '1px solid var(--border)' }}
+                  >
+                    <Database size={16} />
+                    <span>Open Standalone Portal</span>
+                  </button>
                   {dataSubTab === 'students' && (
                     <button className="btn btn-primary" onClick={openAddStudent}>
                       <Plus size={16} />
@@ -765,6 +798,15 @@ const SettingsPage = () => {
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Mother's Name</label>
                     <input type="text" className="input" value={studentMother} onChange={(e) => setStudentMother(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Starting Due Balance</label>
+                    <select value={studentDueOption} onChange={(e) => setStudentDueOption(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }}>
+                      <option value="0">₹0 Due (Paid Up)</option>
+                      <option value="200">₹200 Due</option>
+                      <option value="400">₹400 Due</option>
+                      <option value="600">₹600 Due</option>
+                    </select>
                   </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-md)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
