@@ -18,6 +18,28 @@ db.version(2).stores({
   cachedData: 'key, value, updatedAt',
 });
 
+// Check database version and wipe legacy mock data to prevent sync/roster glitches
+const DB_VERSION_KEY = 'hnd_db_roster_schema_v3';
+if (localStorage.getItem(DB_VERSION_KEY) !== 'v3') {
+  db.on('ready', async () => {
+    try {
+      console.log('Database schema update or legacy data detected. Wiping IndexedDB to load official 94-student roster...');
+      await Promise.all([
+        db.students.clear(),
+        db.teachers.clear(),
+        db.classes.clear(),
+        db.users.clear(),
+        db.faceDescriptors.clear(),
+        db.pendingAttendance.clear()
+      ]);
+      localStorage.setItem(DB_VERSION_KEY, 'v3');
+      console.log('Database wiped successfully. The app will now seed official roster.');
+    } catch (e) {
+      console.error('Failed to wipe legacy IndexedDB:', e);
+    }
+  });
+}
+
 // Helper: Add attendance record to sync queue when offline
 export const addToPendingQueue = async (attendanceRecord) => {
   try {
