@@ -19,7 +19,8 @@ const SettingsPage = () => {
     students, classes, teachers,
     addStudent, updateStudent, deleteStudent,
     addTeacher, updateTeacher, deleteTeacher,
-    updateClassTeacher
+    updateClassTeacher,
+    addUser, updateUser, deleteUser
   } = useAttendance();
   
   // Tabs: general, attendance, facial, sync, manage_data
@@ -69,6 +70,107 @@ const SettingsPage = () => {
 
   // Password Form States
   const [newPasswordValue, setNewPasswordValue] = useState('');
+
+  // User Form States
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userRole, setUserRole] = useState('teacher');
+  const [userPassword, setUserPassword] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+
+  const openAddUser = () => {
+    setUserName('');
+    setUserEmail('');
+    setUserRole('teacher');
+    setUserPassword('');
+    setUserPhone('');
+    setModalType('user');
+    setModalMode('add');
+    setSelectedItem(null);
+    setShowModal(true);
+  };
+
+  const openEditUser = (user) => {
+    setUserName(user.name);
+    setUserEmail(user.email);
+    setUserRole(user.role);
+    setUserPassword(user.password || '');
+    setUserPhone(user.phone || '');
+    setModalType('user');
+    setModalMode('edit');
+    setSelectedItem(user);
+    setShowModal(true);
+  };
+
+  const handleUserSubmit = async (e) => {
+    e.preventDefault();
+    if (modalMode === 'add' && (!userPassword.trim() || userPassword.length < 4)) {
+      alert('Password must be at least 4 characters long.');
+      return;
+    }
+
+    const initials = userName.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase();
+    const cleanEmail = userEmail.trim().toLowerCase();
+    
+    // Generate id safely based on role and email if adding new
+    const cleanId = modalMode === 'add' ? `${userRole}-${cleanEmail.split('@')[0].replace(/[^a-z0-9]/g, '')}` : selectedItem.id;
+
+    const userData = {
+      id: cleanId,
+      name: userName.trim(),
+      email: cleanEmail,
+      role: userRole,
+      phone: userPhone.trim(),
+      avatar: initials,
+      assignedClasses: modalMode === 'add' ? [] : selectedItem.assignedClasses || []
+    };
+
+    try {
+      if (modalMode === 'add') {
+        // Check if user already exists
+        const existing = await db.users.get(userData.id);
+        if (existing) {
+          alert(`Error: A user with ID/Email "${userData.email}" already exists.`);
+          return;
+        }
+        await addUser(userData, userPassword.trim());
+        setSuccessMsg(`User "${userName}" successfully added.`);
+      } else {
+        const updatedFields = {
+          name: userName.trim(),
+          email: cleanEmail,
+          role: userRole,
+          phone: userPhone.trim(),
+          avatar: initials
+        };
+        if (userPassword.trim()) {
+          updatedFields.password = userPassword.trim();
+        }
+        await updateUser(selectedItem.id, updatedFields);
+        setSuccessMsg(`User "${userName}" details updated.`);
+      }
+      await loadDbUsers();
+      setShowModal(false);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err) {
+      alert(`Database Error: ${err.message || err.toString()}`);
+    }
+  };
+
+  const handleDeleteUser = async (userId, name) => {
+    if (confirm(`Are you sure you want to delete user "${name}"? This will delete their account and logins.`)) {
+      try {
+        await deleteUser(userId);
+        await loadDbUsers();
+        setSuccessMsg(`User "${name}" deleted.`);
+        setSavedSuccess(true);
+        setTimeout(() => setSavedSuccess(false), 3000);
+      } catch (err) {
+        alert(`Error: ${err.message || err.toString()}`);
+      }
+    }
+  };
 
   // Load all system credentials for management
   const loadDbUsers = async () => {
@@ -598,6 +700,12 @@ const SettingsPage = () => {
                       Add Teacher
                     </button>
                   )}
+                  {dataSubTab === 'passwords' && (
+                    <button className="btn btn-primary" onClick={openAddUser}>
+                      <Plus size={16} />
+                      Add User
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -707,7 +815,7 @@ const SettingsPage = () => {
                   <table>
                     <thead>
                       <tr>
-                        <th>Name / Role</th>
+                        <th>Name</th>
                         <th>Login Email / ID</th>
                         <th>Role</th>
                         <th>Password</th>
@@ -722,10 +830,16 @@ const SettingsPage = () => {
                           <td><span className={`badge badge-${u.role === 'admin' ? 'danger' : u.role === 'headmaster' ? 'success' : 'info'}`}>{u.role.toUpperCase()}</span></td>
                           <td><code>••••••••</code> ({u.password})</td>
                           <td>
-                            <button className="btn btn-ghost" style={{ padding: '6px', display: 'flex', gap: '4px', alignItems: 'center' }} onClick={() => openChangePassword(u)}>
-                              <Key size={14} style={{ color: 'var(--warning)' }} />
-                              <span style={{ fontSize: 'var(--font-size-xs)' }}>Change</span>
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button className="btn btn-ghost" style={{ padding: '6px' }} onClick={() => openEditUser(u)} title="Edit User">
+                                <Edit2 size={14} style={{ color: 'var(--accent)' }} />
+                              </button>
+                              {currentUser.id !== u.id && (
+                                <button className="btn btn-ghost" style={{ padding: '6px' }} onClick={() => handleDeleteUser(u.id, u.name)} title="Delete User">
+                                  <Trash2 size={14} style={{ color: 'var(--danger)' }} />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )) : (
@@ -749,6 +863,7 @@ const SettingsPage = () => {
               <h3 style={{ margin: 0 }}>
                 {modalType === 'student' && `${modalMode === 'add' ? 'Add' : 'Edit'} Student`}
                 {modalType === 'teacher' && `${modalMode === 'add' ? 'Add' : 'Edit'} Teacher`}
+                {modalType === 'user' && `${modalMode === 'add' ? 'Add' : 'Edit'} User`}
                 {modalType === 'password' && `Change Password`}
               </h3>
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer' }}>
@@ -851,6 +966,42 @@ const SettingsPage = () => {
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-md)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
                   <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
                   <button type="submit" className="btn btn-primary">Save Teacher</button>
+                </div>
+              </form>
+            )}
+
+            {/* User Add/Edit Form */}
+            {modalType === 'user' && (
+              <form onSubmit={handleUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px', gridColumn: 'span 2' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Full Name</label>
+                    <input type="text" className="input" required value={userName} onChange={(e) => setUserName(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Email (Login ID)</label>
+                    <input type="email" className="input" required placeholder="user@hnd.edu" disabled={modalMode === 'edit'} value={userEmail} onChange={(e) => setUserEmail(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: modalMode === 'edit' ? 'var(--text-tertiary)' : 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Role</label>
+                    <select value={userRole} onChange={(e) => setUserRole(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }}>
+                      <option value="teacher">Teacher</option>
+                      <option value="headmaster">Headmaster</option>
+                      <option value="admin">Administrator</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Password</label>
+                    <input type="text" className="input" required={modalMode === 'add'} placeholder={modalMode === 'edit' ? "Leave empty to keep same" : "At least 4 characters"} value={userPassword} onChange={(e) => setUserPassword(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Mobile Number (Optional)</label>
+                    <input type="text" className="input" placeholder="10-digit number" value={userPhone} onChange={(e) => setUserPhone(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-md)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
+                  <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary">{modalMode === 'add' ? 'Add User' : 'Save Changes'}</button>
                 </div>
               </form>
             )}

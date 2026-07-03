@@ -408,6 +408,104 @@ export const AttendanceProvider = ({ children }) => {
     }
   }, []);
 
+  // ─── CRUD User Database Methods (Admin Roster Console) ───────────────────
+  const addUser = useCallback(async (user, password) => {
+    try {
+      const initials = user.name.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase();
+      await db.users.add({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: password,
+        role: user.role,
+        schoolId: 'school-001',
+        phone: user.phone || '',
+        avatar: initials,
+        assignedClasses: user.assignedClasses || []
+      });
+
+      if (user.role === 'teacher') {
+        await db.teachers.add({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: 'teacher',
+          schoolId: 'school-001',
+          assignedClasses: user.assignedClasses || [],
+          phone: user.phone || '',
+          avatar: initials
+        });
+        const loaded = await db.teachers.toArray();
+        setTeachers(loaded);
+      }
+    } catch (e) {
+      console.error('Failed to add user to IndexedDB:', e);
+      throw e;
+    }
+  }, []);
+
+  const updateUser = useCallback(async (userId, updatedFields) => {
+    try {
+      const oldUser = await db.users.get(userId);
+      if (!oldUser) throw new Error('User not found');
+      
+      await db.users.update(userId, updatedFields);
+      const newUser = await db.users.get(userId);
+
+      // Handle role transition to/from teacher, or synchronize teacher details
+      if (oldUser.role === 'teacher' && newUser.role !== 'teacher') {
+        await db.teachers.delete(userId);
+        const loaded = await db.teachers.toArray();
+        setTeachers(loaded);
+      } else if (oldUser.role !== 'teacher' && newUser.role === 'teacher') {
+        const initials = newUser.name.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase();
+        await db.teachers.add({
+          id: userId,
+          name: newUser.name,
+          email: newUser.email,
+          role: 'teacher',
+          schoolId: 'school-001',
+          assignedClasses: newUser.assignedClasses || [],
+          phone: newUser.phone || '',
+          avatar: initials
+        });
+        const loaded = await db.teachers.toArray();
+        setTeachers(loaded);
+      } else if (newUser.role === 'teacher') {
+        const teacherUpdates = {};
+        if (updatedFields.name) teacherUpdates.name = updatedFields.name;
+        if (updatedFields.email) teacherUpdates.email = updatedFields.email;
+        if (updatedFields.phone) teacherUpdates.phone = updatedFields.phone;
+        if (updatedFields.avatar) teacherUpdates.avatar = updatedFields.avatar;
+        if (updatedFields.assignedClasses) teacherUpdates.assignedClasses = updatedFields.assignedClasses;
+
+        if (Object.keys(teacherUpdates).length > 0) {
+          await db.teachers.update(userId, teacherUpdates);
+          const loaded = await db.teachers.toArray();
+          setTeachers(loaded);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to update user in IndexedDB:', e);
+      throw e;
+    }
+  }, []);
+
+  const deleteUser = useCallback(async (userId) => {
+    try {
+      const user = await db.users.get(userId);
+      await db.users.delete(userId);
+      if (user && user.role === 'teacher') {
+        await db.teachers.delete(userId);
+        const loaded = await db.teachers.toArray();
+        setTeachers(loaded);
+      }
+    } catch (e) {
+      console.error('Failed to delete user from IndexedDB:', e);
+      throw e;
+    }
+  }, []);
+
   const value = {
     records,
     students,
@@ -431,7 +529,10 @@ export const AttendanceProvider = ({ children }) => {
     addTeacher,
     updateTeacher,
     deleteTeacher,
-    updateClassTeacher
+    updateClassTeacher,
+    addUser,
+    updateUser,
+    deleteUser
   };
 
   return (
