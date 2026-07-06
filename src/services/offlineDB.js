@@ -18,6 +18,18 @@ db.version(2).stores({
   cachedData: 'key, value, updatedAt',
 });
 
+// version 3: added persistent attendance records table
+db.version(3).stores({
+  students: 'id, name, rollNo, classId, className, faceRegistered, parentPhone',
+  teachers: 'id, name, email, role, phone',
+  classes: 'id, name, teacherId',
+  users: 'id, email, password, role',
+  faceDescriptors: 'id, studentId, descriptor',
+  pendingAttendance: 'id, studentId, studentName, status, date, timestamp, synced',
+  cachedData: 'key, value, updatedAt',
+  attendance: 'id, studentId, classId, date, status'
+});
+
 // Check database version and wipe legacy mock data to prevent sync/roster glitches
 const DB_VERSION_KEY = 'hnd_db_roster_schema_v3';
 if (localStorage.getItem(DB_VERSION_KEY) !== 'v3') {

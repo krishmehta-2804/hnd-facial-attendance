@@ -37,7 +37,7 @@ export const AttendanceProvider = ({ children }) => {
     }
   }, []);
 
-  // Fetch all students, classes, and teachers from local IndexedDB on mount
+  // Fetch all students, classes, teachers, and attendance logs from local IndexedDB on mount
   useEffect(() => {
     const loadFromDB = async () => {
       try {
@@ -66,6 +66,14 @@ export const AttendanceProvider = ({ children }) => {
         const loadedTeachers = await db.teachers.toArray();
         setTeachers(loadedTeachers);
 
+        // 4. Load Attendance Records
+        let attendanceCount = await db.attendance.count();
+        if (attendanceCount === 0) {
+          await db.attendance.bulkAdd(demoAttendanceRecords);
+        }
+        const loadedRecords = await db.attendance.toArray();
+        setRecords(loadedRecords);
+
         // Sync face status
         await refreshFaceRegistrations();
       } catch (err) {
@@ -73,6 +81,7 @@ export const AttendanceProvider = ({ children }) => {
         setStudents(demoStudents);
         setClasses(demoClasses);
         setTeachers(demoUsers.filter(u => u.role === 'teacher'));
+        setRecords(demoAttendanceRecords);
       }
     };
     loadFromDB();
@@ -259,6 +268,11 @@ export const AttendanceProvider = ({ children }) => {
           return updated;
         }
         return [...prev, record];
+      });
+
+      // Persist the attendance record locally
+      db.attendance.put(record).catch((err) => {
+        console.error('Failed to save attendance record locally:', err);
       });
 
       return record;
