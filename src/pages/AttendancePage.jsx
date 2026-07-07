@@ -36,6 +36,13 @@ const AttendancePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [recentMarked, setRecentMarked] = useState([]);
 
+  // Auto-initialize class once loaded
+  useEffect(() => {
+    if (!selectedClass && classes.length > 0) {
+      setSelectedClass(classes[0].id);
+    }
+  }, [classes, selectedClass]);
+
   // Camera & Scanning States
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [scanStatus, setScanStatus] = useState('idle'); // idle, scanning, recognized
@@ -145,7 +152,7 @@ const AttendancePage = () => {
     addLog('Requesting webcam access...', 'info');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' },
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
       });
       streamRef.current = stream;
       setIsCameraActive(true);

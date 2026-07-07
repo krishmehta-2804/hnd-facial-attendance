@@ -26,6 +26,24 @@ const FaceRegisterPage = () => {
   const animationFrameRef = useRef(null);
   const descriptorsRef = useRef([]);
 
+  const isCameraActiveRef = useRef(isCameraActive);
+  const isCapturingRef = useRef(isCapturing);
+
+  useEffect(() => {
+    isCameraActiveRef.current = isCameraActive;
+  }, [isCameraActive]);
+
+  useEffect(() => {
+    isCapturingRef.current = isCapturing;
+  }, [isCapturing]);
+
+  // Set default selected class once classes are loaded from DB
+  useEffect(() => {
+    if (!selectedClass && classes.length > 0) {
+      setSelectedClass(classes[0].id);
+    }
+  }, [classes, selectedClass]);
+
   // Load models on page mount
   useEffect(() => {
     const initModels = async () => {
@@ -53,7 +71,7 @@ const FaceRegisterPage = () => {
     descriptorsRef.current = [];
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' },
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
       });
       streamRef.current = stream;
       setIsCameraActive(true);
@@ -125,7 +143,7 @@ const FaceRegisterPage = () => {
     descriptorsRef.current = [];
 
     const scanLoop = async () => {
-      if (!videoRef.current || !isCameraActive) return;
+      if (!videoRef.current || !isCameraActiveRef.current || !isCapturingRef.current) return;
 
       try {
         const detection = await detectFace(videoRef.current);
@@ -219,7 +237,7 @@ const FaceRegisterPage = () => {
       }
 
       // Continue loop if not finished
-      if (descriptorsRef.current.length < 5 && isCameraActive) {
+      if (descriptorsRef.current.length < 5 && isCameraActiveRef.current && isCapturingRef.current) {
         // Run loop slightly throttled to avoid UI lag (approx 3 frames per second check)
         setTimeout(() => {
           animationFrameRef.current = requestAnimationFrame(scanLoop);

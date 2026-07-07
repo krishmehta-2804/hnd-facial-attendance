@@ -32,6 +32,16 @@ export const AttendanceProvider = ({ children }) => {
           faceRegistered: registeredIds.has(s.id),
         }))
       );
+
+      // Persist the faceRegistered flag to IndexedDB student records
+      const allStudents = await db.students.toArray();
+      const updatePromises = allStudents.map(async (student) => {
+        const isRegistered = registeredIds.has(student.id);
+        if (student.faceRegistered !== isRegistered) {
+          await db.students.update(student.id, { faceRegistered: isRegistered });
+        }
+      });
+      await Promise.all(updatePromises);
     } catch (err) {
       console.error('Failed to load face registrations from IndexedDB:', err);
     }
