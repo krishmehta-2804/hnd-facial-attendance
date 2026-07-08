@@ -204,7 +204,7 @@ const AttendancePage = () => {
           label: d.studentId,
           descriptors: [new Float32Array(d.descriptor)]
         }));
-        const matcher = createMatcher(formatted, 0.65);
+        const matcher = createMatcher(formatted, 0.45);
         addLog('FaceMatcher successfully compiled. Live recognition running.', 'success');
         startScanningSimulation(matcher);
       } else {

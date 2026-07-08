@@ -86,7 +86,7 @@ export const detectAllFaces = async (videoElement) => {
 };
 
 // ─── Face Matcher ────────────────────────────────────────────
-export const createMatcher = (labeledDescriptors, threshold = 0.65) => {
+export const createMatcher = (labeledDescriptors, threshold = 0.45) => {
   const faceapi = getFaceApi();
   if (!faceapi) return null;
 
