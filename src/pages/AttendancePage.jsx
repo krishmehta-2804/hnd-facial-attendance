@@ -573,7 +573,7 @@ const AttendancePage = () => {
       </div>
 
       {/* Class Stats Summary */}
-      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 'var(--space-md)', marginBottom: 'var(--space-lg)' }}>
+      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 'var(--space-md)', marginBottom: 'var(--space-lg)' }}>
         <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
           <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: 'var(--text)' }}>{classStats.total}</div>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Total</div>
@@ -585,10 +585,6 @@ const AttendancePage = () => {
         <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
           <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: 'var(--danger)' }}>{classStats.absent}</div>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Absent</div>
-        </div>
-        <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: 'var(--warning)' }}>{classStats.late}</div>
-          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Late</div>
         </div>
         <div className="card" style={{ padding: 'var(--space-md)', textAlign: 'center' }}>
           <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: '#3B82F6' }}>
@@ -956,13 +952,6 @@ const AttendancePage = () => {
                       title="Absent"
                     >
                       <XCircle size={12} /> A
-                    </button>
-                    <button
-                      className={status === ATTENDANCE_STATUS.LATE ? 'active-late' : ''}
-                      onClick={() => handleMark(student.id, ATTENDANCE_STATUS.LATE)}
-                      title="Late"
-                    >
-                      <Clock size={12} /> L
                     </button>
                   </div>
                 </div>

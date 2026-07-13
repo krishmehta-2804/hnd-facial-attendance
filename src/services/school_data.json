@@ -7,7 +7,7 @@
     "block": "Gurugram",
     "address": "Haryana, India",
     "phone": "+91-9876543210",
-    "principalName": "Ms. Seema",
+    "principalName": "Ms. Priya / Mr. Shivendra",
     "establishedYear": 2015,
     "academicYear": "2026-2027"
   },
@@ -160,14 +160,24 @@
   ],
   "otherUsers": [
     {
-      "id": "headmaster-seema",
-      "name": "Ms. Seema",
-      "email": "seema@hnd.edu",
+      "id": "headmaster-priya",
+      "name": "Ms. Priya",
+      "email": "priya@hnd.edu",
       "password": "headmaster123",
       "role": "headmaster",
       "schoolId": "school-001",
-      "phone": "+91-98765-99999",
-      "avatar": "MS"
+      "phone": "+91-98765-77777",
+      "avatar": "PR"
+    },
+    {
+      "id": "headmaster-shivendra",
+      "name": "Mr. Shivendra",
+      "email": "shivendra@hnd.edu",
+      "password": "headmaster123",
+      "role": "headmaster",
+      "schoolId": "school-001",
+      "phone": "+91-98765-66666",
+      "avatar": "SH"
     },
     {
       "id": "admin-user",

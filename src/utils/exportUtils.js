@@ -3,7 +3,7 @@
  * PDF and CSV export helpers
  */
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 export const generatePDF = (title, data, columns, options = {}) => {
   const doc = new jsPDF({
@@ -36,7 +36,7 @@ export const generatePDF = (title, data, columns, options = {}) => {
     dataKey: col.key,
   }));
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: 42,
     columns: tableColumns,
     body: data,

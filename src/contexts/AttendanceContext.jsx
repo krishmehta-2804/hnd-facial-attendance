@@ -105,25 +105,26 @@ export const AttendanceProvider = ({ children }) => {
   // Dynamic Dashboard statistics computed from state
   const stats = useMemo(() => {
     const todayRecordsList = records.filter((r) => r.date === today);
+    const activeStudents = students.filter(s => s.status !== 'dropout');
+    const activeStudentIds = new Set(activeStudents.map(s => s.id));
 
-    const totalEnrolled = students.length;
-    const presentToday = todayRecordsList.filter((r) => r.status === ATTENDANCE_STATUS.PRESENT).length;
-    const absentToday = todayRecordsList.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT).length;
-    const lateToday = todayRecordsList.filter((r) => r.status === ATTENDANCE_STATUS.LATE).length;
+    const totalEnrolled = activeStudents.length;
+    const presentToday = todayRecordsList.filter((r) => activeStudentIds.has(r.studentId) && r.status === ATTENDANCE_STATUS.PRESENT).length;
+    const absentToday = todayRecordsList.filter((r) => activeStudentIds.has(r.studentId) && r.status === ATTENDANCE_STATUS.ABSENT).length;
+    const lateToday = 0; // Late status removed
 
     const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
     const yesterdayRecords = records.filter((r) => r.date === yesterday);
-    const presentYesterday = yesterdayRecords.filter((r) => r.status === ATTENDANCE_STATUS.PRESENT).length;
+    const presentYesterday = yesterdayRecords.filter((r) => activeStudentIds.has(r.studentId) && r.status === ATTENDANCE_STATUS.PRESENT).length;
 
     // Class-wise stats for today
     const classStats = classes.map((cls) => {
-      const classStudents = students.filter((s) => s.classId === cls.id);
-      const classRecords = todayRecordsList.filter((r) => r.classId === cls.id);
+      const classStudents = activeStudents.filter((s) => s.classId === cls.id);
+      const classRecords = todayRecordsList.filter((r) => r.classId === cls.id && activeStudentIds.has(r.studentId));
       const present = classRecords.filter((r) => r.status === ATTENDANCE_STATUS.PRESENT).length;
       const absent = classRecords.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT).length;
-      const late = classRecords.filter((r) => r.status === ATTENDANCE_STATUS.LATE).length;
       const total = classStudents.length;
-      const percentage = total > 0 ? Math.round(((present + late) / total) * 100 * 10) / 10 : 0;
+      const percentage = total > 0 ? Math.round((present / total) * 100 * 10) / 10 : 0;
 
       return {
         classId: cls.id,
@@ -132,7 +133,7 @@ export const AttendanceProvider = ({ children }) => {
         total,
         present,
         absent,
-        late,
+        late: 0,
         percentage,
       };
     });
@@ -143,16 +144,15 @@ export const AttendanceProvider = ({ children }) => {
       const date = subDays(new Date(), i);
       if (date.getDay() === 0) continue;
       const dateStr = format(date, 'yyyy-MM-dd');
-      const dayRecords = records.filter((r) => r.date === dateStr);
+      const dayRecords = records.filter((r) => r.date === dateStr && activeStudentIds.has(r.studentId));
       const dayPresent = dayRecords.filter((r) => r.status === ATTENDANCE_STATUS.PRESENT).length;
-      const dayLate = dayRecords.filter((r) => r.status === ATTENDANCE_STATUS.LATE).length;
 
       trendData.push({
         date: dateStr,
         dateLabel: format(date, 'dd MMM'),
         present: dayPresent,
-        late: dayLate,
-        absent: records.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT && r.date === dateStr).length,
+        late: 0,
+        absent: dayRecords.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT).length,
       });
     }
 
@@ -307,19 +307,19 @@ export const AttendanceProvider = ({ children }) => {
   );
 
   const getClassStudents = useCallback(
-    (classId) => students.filter((s) => s.classId === classId),
+    (classId) => students.filter((s) => s.classId === classId && s.status !== 'dropout'),
     [students]
   );
 
   const getClassTodayStats = useCallback(
     (classId, date = today) => {
-      const classStudents = students.filter((s) => s.classId === classId);
+      const classStudents = students.filter((s) => s.classId === classId && s.status !== 'dropout');
       const classRecords = records.filter((r) => r.classId === classId && r.date === date);
       return {
         total: classStudents.length,
         present: classRecords.filter((r) => r.status === ATTENDANCE_STATUS.PRESENT).length,
         absent: classRecords.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT).length,
-        late: classRecords.filter((r) => r.status === ATTENDANCE_STATUS.LATE).length,
+        late: 0,
       };
     },
     [students, records, today]

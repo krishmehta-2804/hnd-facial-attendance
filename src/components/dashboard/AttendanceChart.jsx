@@ -6,23 +6,21 @@ import { Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const AttendanceChart = ({ present = 0, absent = 0, late = 0 }) => {
-  const total = present + absent + late;
+const AttendanceChart = ({ present = 0, absent = 0 }) => {
+  const total = present + absent;
 
   const data = {
-    labels: ['Present', 'Absent', 'Late'],
+    labels: ['Present', 'Absent'],
     datasets: [
       {
-        data: [present, absent, late],
+        data: [present, absent],
         backgroundColor: [
           'rgba(16, 185, 129, 0.8)',
           'rgba(239, 68, 68, 0.8)',
-          'rgba(245, 158, 11, 0.8)',
         ],
         borderColor: [
           'rgba(16, 185, 129, 1)',
           'rgba(239, 68, 68, 1)',
-          'rgba(245, 158, 11, 1)',
         ],
         borderWidth: 2,
         hoverBorderWidth: 3,
@@ -73,7 +71,7 @@ const AttendanceChart = ({ present = 0, absent = 0, late = 0 }) => {
     beforeDraw: (chart) => {
       const { ctx, width, height } = chart;
       ctx.save();
-      const pct = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
+      const pct = total > 0 ? Math.round((present / total) * 100) : 0;
 
       ctx.font = '800 28px Inter';
       ctx.fillStyle = '#E2E8F0';

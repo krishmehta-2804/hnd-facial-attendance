@@ -221,14 +221,6 @@ const DashboardPage = () => {
             trendValue={trend.value}
           />
         </div>
-        <div className="animate-fade-in-up stagger-4">
-          <StatsCard
-            title="Late Arrivals"
-            value={stats.lateToday}
-            icon={Clock}
-            color="warning"
-          />
-        </div>
       </div>
 
       {/* Charts Row */}
@@ -243,7 +235,6 @@ const DashboardPage = () => {
           <AttendanceChart
             present={stats.presentToday}
             absent={stats.absentToday}
-            late={stats.lateToday}
           />
         </div>
       </div>
@@ -252,7 +243,7 @@ const DashboardPage = () => {
       <div className="two-col-grid" style={{ marginBottom: 'var(--space-xl)' }}>
         <div className="animate-fade-in-up stagger-5">
           <MealCounter
-            presentCount={stats.presentToday + stats.lateToday}
+            presentCount={stats.presentToday}
             totalEnrolled={stats.totalEnrolled}
             yesterdayCount={stats.presentYesterday}
           />

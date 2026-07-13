@@ -31,7 +31,6 @@ const ReportsPage = () => {
           total: cls.total,
           present: cls.present,
           absent: cls.absent,
-          late: cls.late,
           percentage: `${cls.percentage}%`,
         }));
 
@@ -41,7 +40,6 @@ const ReportsPage = () => {
           { header: 'Total', key: 'total' },
           { header: 'Present', key: 'present' },
           { header: 'Absent', key: 'absent' },
-          { header: 'Late', key: 'late' },
           { header: 'Attendance %', key: 'percentage' },
         ];
       } else {
@@ -80,11 +78,11 @@ const ReportsPage = () => {
         {
           summary: selectedClass === 'all' ? [
             `Total Students: ${stats.totalEnrolled}`,
-            `Present: ${stats.presentToday} | Absent: ${stats.absentToday} | Late: ${stats.lateToday}`,
+            `Present: ${stats.presentToday} | Absent: ${stats.absentToday}`,
             `Overall Attendance: ${stats.attendancePercentage}%`,
           ] : [
             `Class Size: ${data.length} Enrolled`,
-            `Present: ${data.filter(d => d.status === 'PRESENT').length} | Absent: ${data.filter(d => d.status === 'ABSENT').length} | Late: ${data.filter(d => d.status === 'LATE').length}`,
+            `Present: ${data.filter(d => d.status === 'PRESENT').length} | Absent: ${data.filter(d => d.status === 'ABSENT').length}`,
           ]
         }
       );
@@ -102,7 +100,6 @@ const ReportsPage = () => {
         total: cls.total,
         present: cls.present,
         absent: cls.absent,
-        late: cls.late,
         percentage: cls.percentage,
       }));
 
@@ -112,7 +109,6 @@ const ReportsPage = () => {
         { header: 'Total Students', key: 'total' },
         { header: 'Present', key: 'present' },
         { header: 'Absent', key: 'absent' },
-        { header: 'Late', key: 'late' },
         { header: 'Attendance %', key: 'percentage' },
       ];
     } else {
@@ -246,7 +242,6 @@ const ReportsPage = () => {
                   <th>Total</th>
                   <th>Present</th>
                   <th>Absent</th>
-                  <th>Late</th>
                   <th>Attendance %</th>
                 </tr>
               </thead>
@@ -260,7 +255,6 @@ const ReportsPage = () => {
                       <td>{cls.total}</td>
                       <td style={{ color: 'var(--success)', fontWeight: 600 }}>{cls.present}</td>
                       <td style={{ color: 'var(--danger)', fontWeight: 600 }}>{cls.absent}</td>
-                      <td style={{ color: 'var(--warning)', fontWeight: 600 }}>{cls.late}</td>
                       <td><span className={`attendance-pct ${pctClass}`}>{cls.percentage}%</span></td>
                     </tr>
                   );
@@ -272,7 +266,6 @@ const ReportsPage = () => {
                   <td>{stats.totalEnrolled}</td>
                   <td style={{ color: 'var(--success)' }}>{stats.presentToday}</td>
                   <td style={{ color: 'var(--danger)' }}>{stats.absentToday}</td>
-                  <td style={{ color: 'var(--warning)' }}>{stats.lateToday}</td>
                   <td>
                     <span className={`attendance-pct ${stats.attendancePercentage >= 90 ? 'excellent' : stats.attendancePercentage >= 75 ? 'good' : 'poor'}`}>
                       {stats.attendancePercentage}%
@@ -350,16 +343,14 @@ const ReportsPage = () => {
                   const classTotal = classStudents.length;
                   const classPresent = classRecords.filter(r => r.status === 'present').length;
                   const classAbsent = classRecords.filter(r => r.status === 'absent').length;
-                  const classLate = classRecords.filter(r => r.status === 'late').length;
-                  const classPct = classTotal > 0 ? Math.round(((classPresent + classLate) / classTotal) * 100 * 10) / 10 : 0;
+                  const classPct = classTotal > 0 ? Math.round((classPresent / classTotal) * 100 * 10) / 10 : 0;
 
                   return (
                     <tr style={{ background: 'var(--bg-glass-light)', fontWeight: 700 }}>
                       <td colSpan={2}>Class Total ({classTotal} Enrolled)</td>
                       <td>
                         <span className="badge badge-success" style={{ marginRight: '6px' }}>P: {classPresent}</span>
-                        <span className="badge badge-danger" style={{ marginRight: '6px' }}>A: {classAbsent}</span>
-                        <span className="badge badge-warning">L: {classLate}</span>
+                        <span className="badge badge-danger">A: {classAbsent}</span>
                       </td>
                       <td>Attendance %</td>
                       <td colSpan={2}>

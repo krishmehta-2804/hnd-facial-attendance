@@ -51,8 +51,13 @@ const StudentsPage = () => {
 
   const filteredStudents = useMemo(() => {
     let result = students;
-    if (selectedClass !== 'all') {
-      result = result.filter((s) => s.classId === selectedClass);
+    if (selectedClass === 'dropout') {
+      result = result.filter((s) => s.status === 'dropout');
+    } else {
+      result = result.filter((s) => s.status !== 'dropout');
+      if (selectedClass !== 'all') {
+        result = result.filter((s) => s.classId === selectedClass);
+      }
     }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -108,6 +113,7 @@ const StudentsPage = () => {
                 Class {cls.name}-{cls.section}
               </option>
             ))}
+            <option value="dropout">Dropouts / Inactive</option>
           </select>
 
           <div className="view-toggle">

@@ -60,6 +60,7 @@ const SettingsPage = () => {
   const [studentFather, setStudentFather] = useState('');
   const [studentMother, setStudentMother] = useState('');
   const [studentDueOption, setStudentDueOption] = useState('0'); // '0', '200', '400', '600'
+  const [studentStatus, setStudentStatus] = useState('active'); // 'active', 'dropout'
 
   // Teacher Form States
   const [teacherName, setTeacherName] = useState('');
@@ -197,13 +198,17 @@ const SettingsPage = () => {
 
   // ─── Search & Filters for Data Management ─────────────────────
   const filteredStudents = useMemo(() => {
+    const isDropoutTab = dataSubTab === 'dropouts';
     return students.filter(s => {
+      const isStudentDropout = s.status === 'dropout';
+      if (isDropoutTab !== isStudentDropout) return false;
+
       const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             s.admissionNo.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesClass = selectedClassFilter === 'all' || s.classId === selectedClassFilter;
       return matchesSearch && matchesClass;
     });
-  }, [students, searchQuery, selectedClassFilter]);
+  }, [students, searchQuery, selectedClassFilter, dataSubTab]);
 
   const filteredTeachers = useMemo(() => {
     return teachers.filter(t => 
@@ -238,6 +243,7 @@ const SettingsPage = () => {
     setStudentFather('');
     setStudentMother('');
     setStudentDueOption('0');
+    setStudentStatus('active');
     
     setModalType('student');
     setModalMode('add');
@@ -254,6 +260,7 @@ const SettingsPage = () => {
     setStudentParentPhone(student.parentPhone);
     setStudentFather(student.fatherName);
     setStudentMother(student.motherName);
+    setStudentStatus(student.status || 'active');
     
     const targetDue = getCurrentTargetDue();
     const dueAmount = targetDue - (student.feesPaid || 0);
@@ -328,7 +335,8 @@ const SettingsPage = () => {
         return targetDue;
       })(),
       fatherName: studentFather.trim() || 'Not Provided',
-      motherName: studentMother.trim() || 'Not Provided'
+      motherName: studentMother.trim() || 'Not Provided',
+      status: studentStatus
     };
 
     try {
@@ -490,7 +498,7 @@ const SettingsPage = () => {
               <CloudLightning size={16} />
               <span>Database & Sync</span>
             </button>
-            {currentUser?.role === 'admin' && (
+            {['admin', 'headmaster'].includes(currentUser?.role) && (
               <button
                 className={`btn ${activeTab === 'manage_data' ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={() => setActiveTab('manage_data')}
@@ -662,7 +670,13 @@ const SettingsPage = () => {
                     className={`btn ${dataSubTab === 'students' ? 'btn-primary' : 'btn-ghost'}`}
                     onClick={() => { setDataSubTab('students'); setSearchQuery(''); }}
                   >
-                    Students Directory ({students.length})
+                    Active Students ({students.filter(s => s.status !== 'dropout').length})
+                  </button>
+                  <button 
+                    className={`btn ${dataSubTab === 'dropouts' ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => { setDataSubTab('dropouts'); setSearchQuery(''); }}
+                  >
+                    Dropouts ({students.filter(s => s.status === 'dropout').length})
                   </button>
                   <button 
                     className={`btn ${dataSubTab === 'teachers' ? 'btn-primary' : 'btn-ghost'}`}
@@ -689,6 +703,12 @@ const SettingsPage = () => {
                     <span>Open Standalone Portal</span>
                   </button>
                   {dataSubTab === 'students' && (
+                    <button className="btn btn-primary" onClick={openAddStudent}>
+                      <Plus size={16} />
+                      Add Student
+                    </button>
+                  )}
+                  {dataSubTab === 'dropouts' && (
                     <button className="btn btn-primary" onClick={openAddStudent}>
                       <Plus size={16} />
                       Add Student
@@ -737,7 +757,7 @@ const SettingsPage = () => {
 
               {/* Table rendering */}
               <div className="table-container" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-                {dataSubTab === 'students' && (
+                {(dataSubTab === 'students' || dataSubTab === 'dropouts') && (
                   <table>
                     <thead>
                       <tr>
@@ -904,7 +924,7 @@ const SettingsPage = () => {
                   </div>
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Parent Mobile Number</label>
-                    <input type="text" className="input" required pattern="\d{10}" placeholder="10-digit number" value={studentParentPhone} onChange={(e) => setStudentParentPhone(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
+                    <input type="text" className="input" required placeholder="Mobile number" value={studentParentPhone} onChange={(e) => setStudentParentPhone(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }} />
                   </div>
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Father's Name</label>
@@ -921,6 +941,13 @@ const SettingsPage = () => {
                       <option value="200">₹200 Due</option>
                       <option value="400">₹400 Due</option>
                       <option value="600">₹600 Due</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Enrollment Status</label>
+                    <select value={studentStatus} onChange={(e) => setStudentStatus(e.target.value)} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--bg-secondary)', color: 'var(--text)' }}>
+                      <option value="active">Active</option>
+                      <option value="dropout">Dropout</option>
                     </select>
                   </div>
                 </div>
