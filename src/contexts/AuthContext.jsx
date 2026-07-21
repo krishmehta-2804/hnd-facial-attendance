@@ -32,33 +32,29 @@ export const AuthProvider = ({ children }) => {
         // Dynamic headmaster credentials updates
         await db.users.delete('headmaster-seema');
         
-        const priyaExists = await db.users.get('headmaster-priya');
-        if (!priyaExists) {
-          await db.users.put({
-            id: 'headmaster-priya',
-            name: 'Ms. Priya',
-            email: 'priya@hnd.edu',
-            password: 'headmaster123',
-            role: 'headmaster',
-            schoolId: 'school-001',
-            phone: '+91-98765-77777',
-            avatar: 'PR'
-          });
-        }
+        // Force-update Priya Ma'am credentials to match school_data.json
+        await db.users.put({
+          id: 'headmaster-priya',
+          name: 'Ms. Priya',
+          email: 'priya@hnd.edu',
+          password: 'headmaster123',
+          role: 'headmaster',
+          schoolId: 'school-001',
+          phone: '+91-98765-77777',
+          avatar: 'PR'
+        });
 
-        const shivendraExists = await db.users.get('headmaster-shivendra');
-        if (!shivendraExists) {
-          await db.users.put({
-            id: 'headmaster-shivendra',
-            name: 'Mr. Shivendra',
-            email: 'shivendra@hnd.edu',
-            password: 'headmaster123',
-            role: 'headmaster',
-            schoolId: 'school-001',
-            phone: '+91-98765-66666',
-            avatar: 'SH'
-          });
-        }
+        // Force-update Shivendra Sir credentials to match school_data.json
+        await db.users.put({
+          id: 'headmaster-shivendra',
+          name: 'Mr. Shivendra',
+          email: 'shivendra@hnd.edu',
+          password: 'headmaster123',
+          role: 'headmaster',
+          schoolId: 'school-001',
+          phone: '+91-98765-66666',
+          avatar: 'SH'
+        });
       }
     } catch (e) {
       console.error('Failed to initialize users in IndexedDB:', e);

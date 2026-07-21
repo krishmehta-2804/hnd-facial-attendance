@@ -3,6 +3,7 @@
  */
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { useAttendance } from '../contexts/AttendanceContext';
 import { SCHOOL_CONFIG, FACE_DETECTION_CONFIG, ROUTES } from '../utils/constants';
