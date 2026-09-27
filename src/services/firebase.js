@@ -7,14 +7,15 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Firebase configuration object, populated from Vite environment variables
+// Firebase configuration object, populated from Vite environment variables or defaults
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'mock-api-key',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'mock-auth-domain.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'mock-project-id',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'mock-project-id.appspot.com',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '1234567890',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:1234567890:web:abcdef123456',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDsHJ6DS0atgOyEc7tfory5Nbat0VR21NY",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "hnd-attendance.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "hnd-attendance",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "hnd-attendance.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "432436641018",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:432436641018:web:ceeb281ba51da2df489d43",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-MCXL9XRY2S",
 };
 
 // Initialize Firebase app instance

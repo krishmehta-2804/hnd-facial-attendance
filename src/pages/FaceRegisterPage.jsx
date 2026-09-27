@@ -6,6 +6,7 @@ import { useAttendance } from '../contexts/AttendanceContext';
 import { Camera, RefreshCw, CheckCircle, AlertCircle, Scan, User, Play, Square, Award } from 'lucide-react';
 import { loadModels, detectFace, areModelsLoaded } from '../services/faceRecognition';
 import offlineDB from '../services/offlineDB';
+import { syncFaceDescriptor } from '../services/cloudSync';
 import '../styles/attendance.css';
 
 const FaceRegisterPage = () => {
@@ -198,6 +199,11 @@ const FaceRegisterPage = () => {
               id: selectedStudent,
               studentId: selectedStudent,
               descriptor: Array.from(average) // serialize to standard array
+            });
+
+            // Sync biometric face template to Cloud Firestore
+            syncFaceDescriptor(selectedStudent, average).catch((err) => {
+              console.warn('Failed to sync face descriptor to cloud:', err);
             });
 
             // Refresh global attendance context state

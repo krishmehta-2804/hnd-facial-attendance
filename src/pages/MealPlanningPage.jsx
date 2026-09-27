@@ -3,6 +3,7 @@ import { useAttendance } from '../contexts/AttendanceContext';
 import { demoSchool } from '../services/demoData';
 import { format, parseISO } from 'date-fns';
 import { UtensilsCrossed, Users, Calendar, Calculator, Landmark, Check } from 'lucide-react';
+import { syncMealLog, fetchMealLogsFromCloud } from '../services/cloudSync';
 
 const MealPlanningPage = () => {
   const { students, records } = useAttendance();
@@ -27,6 +28,21 @@ const MealPlanningPage = () => {
       return {};
     }
   });
+
+  // Pull latest meal logs from Cloud Firestore on mount
+  useEffect(() => {
+    const loadCloudMeals = async () => {
+      const cloudLogs = await fetchMealLogsFromCloud();
+      if (cloudLogs && Object.keys(cloudLogs).length > 0) {
+        setMealLogs((prev) => {
+          const merged = { ...prev, ...cloudLogs };
+          localStorage.setItem('hnd_global_meal_logs', JSON.stringify(merged));
+          return merged;
+        });
+      }
+    };
+    loadCloudMeals();
+  }, []);
 
   // Calculate total present students for the selected date (excluding dropouts)
   const presentStudentsCount = useMemo(() => {
@@ -67,6 +83,11 @@ const MealPlanningPage = () => {
 
     setMealLogs(updatedLogs);
     localStorage.setItem('hnd_global_meal_logs', JSON.stringify(updatedLogs));
+
+    // Sync to Cloud Firestore
+    syncMealLog(selectedDate, newLog).catch((err) => {
+      console.warn('Failed to sync meal log to cloud:', err);
+    });
 
     setSuccessMsg('Meal record saved successfully!');
     setTimeout(() => setSuccessMsg(''), 3000);

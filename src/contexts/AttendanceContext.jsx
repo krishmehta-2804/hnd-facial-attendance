@@ -3,6 +3,19 @@ import { format, subDays } from 'date-fns';
 import { demoAttendanceRecords, demoStudents, demoClasses, demoUsers } from '../services/demoData';
 import { ATTENDANCE_STATUS } from '../utils/constants';
 import db from '../services/offlineDB';
+import {
+  seedCloudDatabaseIfEmpty,
+  pullAllFromCloud,
+  subscribeToAttendance,
+  subscribeToStudents,
+  syncAttendanceRecord,
+  syncStudent,
+  deleteStudentFromCloud,
+  syncTeacher,
+  deleteTeacherFromCloud,
+  syncUser,
+  deleteUserFromCloud,
+} from '../services/cloudSync';
 
 const AttendanceContext = createContext(null);
 
@@ -47,11 +60,14 @@ export const AttendanceProvider = ({ children }) => {
     }
   }, []);
 
-  // Fetch all students, classes, teachers, and attendance logs from local IndexedDB on mount
+  // Fetch all students, classes, teachers, and attendance logs from local IndexedDB + Cloud Firestore on mount
   useEffect(() => {
+    let unsubAttendance = () => {};
+    let unsubStudents = () => {};
+
     const loadFromDB = async () => {
       try {
-        // 1. Load Students
+        // 1. Initial fast local load from IndexedDB
         let studentCount = await db.students.count();
         if (studentCount === 0) {
           await db.students.bulkAdd(demoStudents);
@@ -59,7 +75,6 @@ export const AttendanceProvider = ({ children }) => {
         const loadedStudents = await db.students.toArray();
         setStudents(loadedStudents);
 
-        // 2. Load Classes
         let classCount = await db.classes.count();
         if (classCount === 0) {
           await db.classes.bulkAdd(demoClasses);
@@ -67,7 +82,6 @@ export const AttendanceProvider = ({ children }) => {
         const loadedClasses = await db.classes.toArray();
         setClasses(loadedClasses);
 
-        // 3. Load Teachers
         let teacherCount = await db.teachers.count();
         if (teacherCount === 0) {
           const staticTeachers = demoUsers.filter(u => u.role === 'teacher');
@@ -76,7 +90,6 @@ export const AttendanceProvider = ({ children }) => {
         const loadedTeachers = await db.teachers.toArray();
         setTeachers(loadedTeachers);
 
-        // 4. Load Attendance Records
         let attendanceCount = await db.attendance.count();
         if (attendanceCount === 0) {
           await db.attendance.bulkAdd(demoAttendanceRecords);
@@ -84,8 +97,54 @@ export const AttendanceProvider = ({ children }) => {
         const loadedRecords = await db.attendance.toArray();
         setRecords(loadedRecords);
 
-        // Sync face status
+        // Sync local face status
         await refreshFaceRegistrations();
+
+        // 2. Cloud Firestore multi-device synchronization
+        try {
+          // If Firestore is empty, seed initial master data
+          const staticTeachers = demoUsers.filter(u => u.role === 'teacher');
+          const staticUsers = demoUsers.filter(u => u.role !== 'parent');
+          await seedCloudDatabaseIfEmpty({
+            students: demoStudents,
+            classes: demoClasses,
+            teachers: staticTeachers,
+            users: staticUsers,
+          });
+
+          // Pull fresh cloud data from Firestore
+          const cloudData = await pullAllFromCloud();
+          if (cloudData) {
+            if (cloudData.students?.length) setStudents(cloudData.students);
+            if (cloudData.classes?.length) setClasses(cloudData.classes);
+            if (cloudData.teachers?.length) setTeachers(cloudData.teachers);
+            if (cloudData.attendance?.length) setRecords(cloudData.attendance);
+            await refreshFaceRegistrations();
+          }
+        } catch (cloudErr) {
+          console.warn('[AttendanceContext] Cloud sync offline fallback:', cloudErr.message);
+        }
+
+        // 3. Real-time listeners for updates made on other tablets/devices
+        unsubAttendance = subscribeToAttendance(null, (cloudRecords) => {
+          if (cloudRecords && cloudRecords.length > 0) {
+            setRecords((prev) => {
+              const map = new Map(prev.map(r => [r.id, r]));
+              cloudRecords.forEach(cr => map.set(cr.id, cr));
+              const merged = Array.from(map.values());
+              db.attendance.bulkPut(cloudRecords).catch(() => {});
+              return merged;
+            });
+          }
+        });
+
+        unsubStudents = subscribeToStudents((cloudStudents) => {
+          if (cloudStudents && cloudStudents.length > 0) {
+            setStudents(cloudStudents);
+            db.students.bulkPut(cloudStudents).catch(() => {});
+          }
+        });
+
       } catch (err) {
         console.error('Failed to load database from IndexedDB, falling back:', err);
         setStudents(demoStudents);
@@ -94,7 +153,13 @@ export const AttendanceProvider = ({ children }) => {
         setRecords(demoAttendanceRecords);
       }
     };
+
     loadFromDB();
+
+    return () => {
+      unsubAttendance();
+      unsubStudents();
+    };
   }, [refreshFaceRegistrations]);
 
   const todayRecords = useMemo(
@@ -199,16 +264,21 @@ export const AttendanceProvider = ({ children }) => {
             remarks: remarks || 'Payment received'
           });
 
+          const updatedStudent = {
+            ...s,
+            feesPaid: updatedFeesPaid,
+            feePayments: newPayments
+          };
+
           db.students.update(studentId, { 
             feesPaid: updatedFeesPaid,
             feePayments: newPayments
           });
 
-          return {
-            ...s,
-            feesPaid: updatedFeesPaid,
-            feePayments: newPayments
-          };
+          // Sync to Cloud Firestore
+          syncStudent(updatedStudent).catch(() => {});
+
+          return updatedStudent;
         }
         return s;
       })
@@ -285,6 +355,11 @@ export const AttendanceProvider = ({ children }) => {
         console.error('Failed to save attendance record locally:', err);
       });
 
+      // Sync to Cloud Firestore in real time
+      syncAttendanceRecord(record).catch((err) => {
+        console.warn('Failed to sync attendance record to cloud:', err);
+      });
+
       return record;
     },
     [today, students]
@@ -329,6 +404,7 @@ export const AttendanceProvider = ({ children }) => {
   const addStudent = useCallback(async (student) => {
     try {
       await db.students.add(student);
+      await syncStudent(student);
       const loaded = await db.students.toArray();
       setStudents(loaded);
       await refreshFaceRegistrations();
@@ -341,6 +417,10 @@ export const AttendanceProvider = ({ children }) => {
   const updateStudent = useCallback(async (studentId, updatedData) => {
     try {
       await db.students.update(studentId, updatedData);
+      const current = await db.students.get(studentId);
+      if (current) {
+        await syncStudent(current);
+      }
       const loaded = await db.students.toArray();
       setStudents(loaded);
       await refreshFaceRegistrations();
@@ -354,6 +434,7 @@ export const AttendanceProvider = ({ children }) => {
     try {
       await db.students.delete(studentId);
       await db.faceDescriptors.where('studentId').equals(studentId).delete();
+      await deleteStudentFromCloud(studentId);
       const loaded = await db.students.toArray();
       setStudents(loaded);
       await refreshFaceRegistrations();
@@ -367,7 +448,8 @@ export const AttendanceProvider = ({ children }) => {
   const addTeacher = useCallback(async (teacher, password = 'teacher123') => {
     try {
       await db.teachers.add(teacher);
-      await db.users.add({
+      await syncTeacher(teacher);
+      const userPayload = {
         id: teacher.id,
         name: teacher.name,
         email: teacher.email,
@@ -377,7 +459,9 @@ export const AttendanceProvider = ({ children }) => {
         phone: teacher.phone,
         avatar: teacher.avatar,
         assignedClasses: teacher.assignedClasses || []
-      });
+      };
+      await db.users.add(userPayload);
+      await syncUser(userPayload);
       const loaded = await db.teachers.toArray();
       setTeachers(loaded);
     } catch (e) {
@@ -389,6 +473,10 @@ export const AttendanceProvider = ({ children }) => {
   const updateTeacher = useCallback(async (teacherId, updatedData) => {
     try {
       await db.teachers.update(teacherId, updatedData);
+      const currentTeacher = await db.teachers.get(teacherId);
+      if (currentTeacher) {
+        await syncTeacher(currentTeacher);
+      }
       
       const userUpdates = {};
       if (updatedData.name) userUpdates.name = updatedData.name;
@@ -399,6 +487,10 @@ export const AttendanceProvider = ({ children }) => {
       
       if (Object.keys(userUpdates).length > 0) {
         await db.users.update(teacherId, userUpdates);
+        const currentUser = await db.users.get(teacherId);
+        if (currentUser) {
+          await syncUser(currentUser);
+        }
       }
       const loaded = await db.teachers.toArray();
       setTeachers(loaded);
@@ -412,6 +504,8 @@ export const AttendanceProvider = ({ children }) => {
     try {
       await db.teachers.delete(teacherId);
       await db.users.delete(teacherId);
+      await deleteTeacherFromCloud(teacherId);
+      await deleteUserFromCloud(teacherId);
       const loaded = await db.teachers.toArray();
       setTeachers(loaded);
     } catch (e) {
@@ -436,7 +530,7 @@ export const AttendanceProvider = ({ children }) => {
   const addUser = useCallback(async (user, password) => {
     try {
       const initials = user.name.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase();
-      await db.users.add({
+      const userPayload = {
         id: user.id,
         name: user.name,
         email: user.email,
@@ -446,10 +540,12 @@ export const AttendanceProvider = ({ children }) => {
         phone: user.phone || '',
         avatar: initials,
         assignedClasses: user.assignedClasses || []
-      });
+      };
+      await db.users.add(userPayload);
+      await syncUser(userPayload);
 
       if (user.role === 'teacher') {
-        await db.teachers.add({
+        const teacherPayload = {
           id: user.id,
           name: user.name,
           email: user.email,
@@ -458,7 +554,9 @@ export const AttendanceProvider = ({ children }) => {
           assignedClasses: user.assignedClasses || [],
           phone: user.phone || '',
           avatar: initials
-        });
+        };
+        await db.teachers.add(teacherPayload);
+        await syncTeacher(teacherPayload);
         const loaded = await db.teachers.toArray();
         setTeachers(loaded);
       }
@@ -475,15 +573,19 @@ export const AttendanceProvider = ({ children }) => {
       
       await db.users.update(userId, updatedFields);
       const newUser = await db.users.get(userId);
+      if (newUser) {
+        await syncUser(newUser);
+      }
 
       // Handle role transition to/from teacher, or synchronize teacher details
       if (oldUser.role === 'teacher' && newUser.role !== 'teacher') {
         await db.teachers.delete(userId);
+        await deleteTeacherFromCloud(userId);
         const loaded = await db.teachers.toArray();
         setTeachers(loaded);
       } else if (oldUser.role !== 'teacher' && newUser.role === 'teacher') {
         const initials = newUser.name.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase();
-        await db.teachers.add({
+        const teacherPayload = {
           id: userId,
           name: newUser.name,
           email: newUser.email,
@@ -492,7 +594,9 @@ export const AttendanceProvider = ({ children }) => {
           assignedClasses: newUser.assignedClasses || [],
           phone: newUser.phone || '',
           avatar: initials
-        });
+        };
+        await db.teachers.add(teacherPayload);
+        await syncTeacher(teacherPayload);
         const loaded = await db.teachers.toArray();
         setTeachers(loaded);
       } else if (newUser.role === 'teacher') {
@@ -505,6 +609,10 @@ export const AttendanceProvider = ({ children }) => {
 
         if (Object.keys(teacherUpdates).length > 0) {
           await db.teachers.update(userId, teacherUpdates);
+          const currentTeacher = await db.teachers.get(userId);
+          if (currentTeacher) {
+            await syncTeacher(currentTeacher);
+          }
           const loaded = await db.teachers.toArray();
           setTeachers(loaded);
         }
@@ -519,8 +627,10 @@ export const AttendanceProvider = ({ children }) => {
     try {
       const user = await db.users.get(userId);
       await db.users.delete(userId);
+      await deleteUserFromCloud(userId);
       if (user && user.role === 'teacher') {
         await db.teachers.delete(userId);
+        await deleteTeacherFromCloud(userId);
         const loaded = await db.teachers.toArray();
         setTeachers(loaded);
       }

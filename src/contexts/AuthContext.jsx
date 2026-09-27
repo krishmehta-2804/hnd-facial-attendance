@@ -6,6 +6,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 import { demoUsers } from '../services/demoData';
 import { STORAGE_KEYS, ROLE_PERMISSIONS } from '../utils/constants';
 import db from '../services/offlineDB';
+import { syncUser } from '../services/cloudSync';
 
 const AuthContext = createContext(null);
 
@@ -152,6 +153,10 @@ export const AuthProvider = ({ children }) => {
   const updatePassword = useCallback(async (userId, newPassword) => {
     try {
       await db.users.update(userId, { password: newPassword });
+      const updatedUser = await db.users.get(userId);
+      if (updatedUser) {
+        await syncUser(updatedUser);
+      }
       console.log(`Password updated successfully for user ${userId}`);
     } catch (e) {
       console.error('Failed to update password in IndexedDB:', e);
